@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,7 +14,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     const token = sessionStorage.getItem("token");
 
     if (!token) {
-      router.replace("/signin"); // Đẩy về login nếu chưa đăng nhập
+      router.replace("/signin");
       return;
     }
 
@@ -21,15 +22,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, [router]);
 
-  // if (loading) {
-  //   return <div className="h-screen flex items-center justify-center text-xl"></div>;
-  // }
-
   return isAuthenticated ? (
     <SidebarProvider>
       <AppSidebar />
+
       <main>
-        <SidebarTrigger />
+        <div className="flex">
+          <div className="w-10 h-10 flex items-center justify-center text-lg">
+            <SidebarTrigger />
+          </div>
+          
+        </div>
+
         {children}
       </main>
     </SidebarProvider>

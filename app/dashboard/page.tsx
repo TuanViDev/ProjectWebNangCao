@@ -25,17 +25,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
-      {user?.email ? (
-        <p className="mt-4 text-lg">Xin chào, <span className="font-semibold">{user.email}</span>!</p>
-      ) : (
-        <p className="mt-4 text-red-500">Không tìm thấy thông tin người dùng.</p>
-      )}
-      <Button onClick={handleLogout} className="mt-6 bg-red-500 hover:bg-red-600 text-white">
-        Logout
-      </Button>
-    </div>
+    <div className="bg-blue-100 min-h-full min-w-500"></div>
   );
 };
 
