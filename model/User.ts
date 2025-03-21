@@ -5,6 +5,7 @@ interface IUser extends Document {
     password: string;
     phone?: string;
     email: string;
+    role?: string;
 }
 
 // Định nghĩa Schema với các giá trị mặc định
@@ -13,7 +14,8 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
         username: { type: String, required: false, default: "" },
         password: { type: String, required: true },
         phone: { type: String, required: false, default: "" },
-        email: { type: String, required: true, unique: true }
+        email: { type: String, required: true, unique: true },
+        role: { type: String, required: false, default: 0 },
     },
     { timestamps: true }
 );

@@ -11,6 +11,7 @@ import { set } from "mongoose";
 import { setFips } from "crypto";
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation'
+import Link from "next/link";
 
 
 const SignUp = () => {
@@ -105,7 +106,7 @@ const SignUp = () => {
                             }>Sign up</Button>
                         </div>
                     </form>
-                    <div className="flex justify-center text-m text-gray-500"><a href="/signin">Đã có tài khoản ? Đăng nhập tại đây</a></div>
+                    <div className="flex justify-center text-m text-gray-500"><Link href="/signin">Đã có tài khoản ? Đăng nhập tại đây</Link></div>
                 </CardContent>
                 <div className="flex items-center w-full my-4">
                     <div className="flex-grow border-t border-gray-400"></div>

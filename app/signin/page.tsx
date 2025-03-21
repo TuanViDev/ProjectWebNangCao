@@ -26,7 +26,8 @@ const SignIn = () => {
     const data = await res.json();
 
     if (res.ok) {
-      localStorage.setItem("token", data.token); // Lưu token vào localStorage
+      sessionStorage.setItem("token", data.token); // Lưu token vào sessionStorage
+      sessionStorage.setItem("user", JSON.stringify({ email: form.email })); // Lưu user
       toast.success(data.message);
       router.push("/dashboard"); // Chuyển hướng sau khi đăng nhập thành công
     } else {
