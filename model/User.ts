@@ -6,6 +6,9 @@ interface IUser extends Document {
     phone?: string;
     email: string;
     role?: string;
+    vip?: {
+        expireAt: Date | null;
+    };
 }
 
 // Định nghĩa Schema với các giá trị mặc định
@@ -15,7 +18,10 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
         password: { type: String, required: true },
         phone: { type: String, required: false, default: "" },
         email: { type: String, required: true, unique: true },
-        role: { type: String, required: false, default: 0 },
+        role: { type: String, required: false, default: "0" }, // 0 = user, 1 = admin
+        vip: {
+            expireAt: { type: Date, required: false, default: null }, // Ngày hết hạn hoặc null
+        }
     },
     { timestamps: true }
 );

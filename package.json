@@ -20,6 +20,7 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "embla-carousel-react": "^8.5.2",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.483.0",
     "mongoose": "^8.12.1",
