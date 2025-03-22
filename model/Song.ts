@@ -2,21 +2,21 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 
 interface ISong extends Document {
     title: string;
-    duration: number; // Độ dài bài hát tính bằng giây
-    albumId: mongoose.Types.ObjectId;
-    artistIds: mongoose.Types.ObjectId[];
-    audioUrl: string;
+    artist: string;
+    album?: string;
     isVip?: boolean;
+    play: number; // Lượt nghe
+    like: number; // Lượt thích
 }
 
 const SongSchema: Schema<ISong> = new mongoose.Schema(
     {
         title: { type: String, required: true },
-        duration: { type: Number, required: true },
-        albumId: { type: mongoose.Schema.Types.ObjectId, ref: "Album", required: true },
-        artistIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Artist", required: true }],
-        audioUrl: { type: String, required: true },
-        isVip: { type: Boolean, default: false }, // Chỉ VIP mới nghe được
+        artist: { type: String, required: true },
+        album: { type: String, default: null },
+        isVip: { type: Boolean, default: false },
+        play: { type: Number, default: 0 }, // Mặc định 0 lượt nghe
+        like: { type: Number, default: 0 }, // Mặc định 0 lượt thích
     },
     { timestamps: true }
 );

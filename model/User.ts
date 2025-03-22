@@ -5,7 +5,7 @@ interface IUser extends Document {
     password: string;
     phone?: string;
     email: string;
-    role?: string;
+    role?: Number;
     vip?: {
         expireAt: Date | null;
     };
@@ -18,7 +18,7 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
         password: { type: String, required: true },
         phone: { type: String, required: false, default: "" },
         email: { type: String, required: true, unique: true },
-        role: { type: String, required: false, default: "0" }, // 0 = user, 1 = admin
+        role: { type: Number, required: false, default: 0 }, // 0 = user, 1 = admin
         vip: {
             expireAt: { type: Date, required: false, default: null }, // Ngày hết hạn hoặc null
         }

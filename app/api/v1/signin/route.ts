@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import User from '@/model/User';
 import connectDB from '@/lib/mongodb';
 
-const JWT_SECRET = "ABC";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 /**
  * @swagger
@@ -40,6 +40,9 @@ const JWT_SECRET = "ABC";
  *                   example: "Login successful"
  *                 token:
  *                   type: string
+ *                 role:
+ *                   type: string
+ *                   example: "admin"
  *       400:
  *         description: Invalid email or password
  *       500:
@@ -69,9 +72,13 @@ export async function POST(request: Request) {
         }
 
         // Tạo token JWT
-        const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+        const token = jwt.sign(
+            { userId: user._id, email: user.email, role: user.role },
+            JWT_SECRET as string,
+            { expiresIn: "7d" }
+        );
 
-        return NextResponse.json({ message: "Login successful", token }, { status: 200 });
+        return NextResponse.json({ message: "Login successful", token, role: user.role }, { status: 200 });
 
     } catch (error) {
         console.error("Signin Error:", error);
