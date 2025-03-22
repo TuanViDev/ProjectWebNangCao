@@ -1,6 +1,7 @@
-import dbConnect from "../../../../../config/connection";
+import dbConnect from "../../../../../lib/mongodb";
 import User from "../../../../../model/User";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 /**
  * @swagger
@@ -8,7 +9,8 @@ import mongoose from "mongoose";
  *   get:
  *     tags:
  *       - User
- *     description: Find a user by ID
+ *     summary: Find a user by ID (Admin only)
+ *     description: Only admin users can find a user by providing their ID.
  *     parameters:
  *       - in: query
  *         name: id
@@ -16,11 +18,15 @@ import mongoose from "mongoose";
  *         schema:
  *           type: string
  *         description: The ID of the user to find
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: User found successfully
  *       400:
- *         description: Bad Request
+ *         description: Invalid or missing User ID
+ *       403:
+ *         description: Forbidden - Admin access required
  *       404:
  *         description: User not found
  *       500:
@@ -30,8 +36,46 @@ import mongoose from "mongoose";
 export async function GET(request) {
     try {
         await dbConnect();
-        const url = new URL(request.url, `http://localhost`); // Đảm bảo lấy URL chính xác
+        const url = new URL(request.url, `http://localhost`);
         const id = url.searchParams.get("id");
+
+        // Lấy token từ header
+        const authHeader = request.headers.get("Authorization");
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return new Response(JSON.stringify({
+                success: false,
+                message: "Unauthorized: Missing token"
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        const token = authHeader.split(" ")[1];
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            return new Response(JSON.stringify({
+                success: false,
+                message: "Unauthorized: Invalid token"
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        // Kiểm tra quyền admin dựa trên email từ token
+        const adminUser = await User.findOne({ email: decoded.email });
+        if (!adminUser || adminUser.role !== "1") {
+            return new Response(JSON.stringify({
+                success: false,
+                message: "Forbidden: Admin access required"
+            }), {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return new Response(JSON.stringify({

@@ -3,6 +3,38 @@ import { NextResponse } from 'next/server';
 import User from '@/model/User';
 import connectDB from '@/lib/mongodb';
 
+/**
+ * @swagger
+ * /api/v1/signup:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: User Sign Up
+ *     description: Register a new user account.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *               confirmPassword:
+ *                 type: string
+ *                 example: "password123"
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Bad request (e.g., invalid email, password mismatch, user already exists)
+ *       500:
+ *         description: Server error
+ */
 export async function POST(request: Request) {
     try {
         const { email, password, confirmPassword } = await request.json();

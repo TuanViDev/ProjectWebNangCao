@@ -6,6 +6,45 @@ import connectDB from '@/lib/mongodb';
 
 const JWT_SECRET = "ABC";
 
+/**
+ * @swagger
+ * /api/v1/signin:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: User Sign In
+ *     description: Authenticate a user and return a JWT token.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Login successful"
+ *                 token:
+ *                   type: string
+ *       400:
+ *         description: Invalid email or password
+ *       500:
+ *         description: Server error
+ */
 export async function POST(request: Request) {
     try {
         const { email, password } = await request.json();
