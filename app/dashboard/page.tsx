@@ -25,7 +25,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="bg-blue-100 min-h-full min-w-500"></div>
+    <div className="bg-gray-700 min-h-full"></div>
   );
 };
 

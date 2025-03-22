@@ -1,9 +1,11 @@
+
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -24,18 +26,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return isAuthenticated ? (
     <SidebarProvider>
-      <AppSidebar />
-
-      <main>
-        <div className="flex">
-          <div className="w-10 h-10 flex items-center justify-center text-lg">
+      <div className="flex h-screen w-full">
+        <AppSidebar/>
+        <main className="flex-1 flex flex-col w-full h-full">
+          <div className="h-10 flex text-lg bg-gray-700 w-full text-white border-none pl-5 pt-3">
             <SidebarTrigger />
           </div>
-          
-        </div>
-
-        {children}
-      </main>
+          <div className="flex-1 w-full h-full overflow-auto border-none">
+            {children}
+          </div>
+        </main>
+      </div>
     </SidebarProvider>
   ) : null;
 }

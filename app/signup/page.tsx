@@ -13,15 +13,13 @@ const SignUp = () => {
   const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
   const [pending, setPending] = useState(false);
   const [bgUrl, setBgUrl] = useState("");
-  const [bgLoaded, setBgLoaded] = useState(false); // Kiểm soát hiệu ứng chuyển đổi
+  const [bgLoaded, setBgLoaded] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const randomBg = Math.floor(Math.random() * 6) + 1;
     setBgUrl(`/img/background/${randomBg}.jpg`);
-
-    // Khi ảnh nền được load xong, kích hoạt hiệu ứng fade-in
-    setTimeout(() => setBgLoaded(true), 100); // Delay để tránh hiệu ứng đột ngột
+    setTimeout(() => setBgLoaded(true), 100);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,20 +45,16 @@ const SignUp = () => {
 
   return (
     <div className="h-screen flex items-center justify-center w-full relative bg-gray-900 text-white">
-      {/* Background hình với hiệu ứng fade-in */}
       {bgUrl && (
         <div
-          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-[2000ms] ease-in ${
+          className={`gray-scale absolute inset-0 bg-cover bg-center transition-opacity duration-[2000ms] ease-in ${
             bgLoaded ? "opacity-30" : "opacity-0"
           }`}
           style={{ backgroundImage: `url(${bgUrl})` }}
         ></div>
       )}
-
-      {/* Overlay với hiệu ứng blur */}
       <div className="absolute inset-0 backdrop-blur-xs"></div>
 
-      {/* Card đăng ký */}
       <Card className="relative w-full max-w-[420px] p-4 sm:p-8 bg-gray-800 text-white shadow-lg border border-gray-700" style={{ backgroundColor: "rgba(31, 41, 55, 0.6)" }}>
         <CardHeader className="flex items-center justify-center">
           <CardTitle className="text-2xl">Đăng ký tài khoản</CardTitle>
@@ -95,7 +89,13 @@ const SignUp = () => {
               required
             />
             <div className="flex justify-center pt-3 pb-6">
-              <Button type="submit" disabled={pending} className="text-white bg-gray-700 border-gray-600 px-6 py-2 hover:bg-gray-600">
+              <Button type="submit" disabled={pending} className="text-white bg-gray-700 border-gray-600 px-6 py-2 hover:bg-gray-600 flex items-center justify-center">
+                {pending && (
+                  <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  </svg>
+                )}
                 {pending ? "Đang đăng ký..." : "Sign up"}
               </Button>
             </div>
