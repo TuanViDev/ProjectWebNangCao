@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTrigger, DialogHeader, 
 import { Label } from "@/components/ui/label";
 import { Toaster } from "@/components/ui/sonner";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { toast } from "sonner";
 
 export default function Explore() {
     const [songs, setSongs] = useState<any[]>([]);
@@ -23,7 +24,8 @@ export default function Explore() {
         id: "",
         title: "",
         artist: "",
-        album: ""
+        album: "",
+        vip: ""
     });
 
     function shortId(str: string) {
@@ -31,12 +33,68 @@ export default function Explore() {
         return str.slice(0, 8) + "..." + str.slice(-8);
     }
 
+
+    const handleSave = async () => {
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+            toast.error("Bạn chưa đăng nhập!");
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/v1/song/update", {
+                method: "PUT",
+                headers: {
+                    "accept": "*/*",
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    songId: songInfo.id,
+                    title: songInfo.title,
+                    artist: songInfo.artist,
+                    album: songInfo.album,
+                    isVip: songInfo.vip === "true"
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success(`${data.message}`);
+            } else {
+                toast.error(`${data.message}`);
+            }
+        } catch (error) {
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        } finally {
+            // 🔄 Fetch lại danh sách bài hát dù có lỗi hay không
+            setLoading(true);
+            const songResponse = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
+                method: "GET",
+                headers: {
+                    accept: "*/*",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const songData = await songResponse.json();
+            setSongs(songData.data);
+            setMaxPage(songData.pagination.totalPages || 1);
+            setLoading(false);
+        }
+    };
+
+
+
+
     const handleTrigger = async (songId: string) => {
         setSongInfo({
             id: songId,
             title: "",
             artist: "",
-            album: ""
+            album: "",
+            vip: "",
         });
 
         const token = sessionStorage.getItem("token");
@@ -54,6 +112,7 @@ export default function Explore() {
             title: data.song.title,
             artist: data.song.artist,
             album: data.song.album,
+            vip: data.song.isVip,
         });
     };
 
@@ -133,26 +192,41 @@ export default function Explore() {
                                                     <DialogContent className="bg-gray-700">
                                                         <DialogHeader>
                                                             <DialogTitle className="text-white">Chỉnh sửa bài hát</DialogTitle>
-                                                            <DialogDescription className="text-gray-300">Nhập vào các trường dữ liệu sau đó bấm vào lưu để cập nhật bài hát.</DialogDescription>
+                                                            <DialogDescription className="text-gray-300">
+                                                                Nhập vào các trường dữ liệu sau đó bấm vào lưu để cập nhật bài hát.
+                                                            </DialogDescription>
                                                         </DialogHeader>
-                                                        <div className="grid gap-4 py-4">
-                                                            <Label htmlFor="id" className="text-right text-white">ID</Label>
-                                                            <Input value={songInfo.id} id="id" className="col-span-3 text-white border-gray-500" disabled />
-                                                            <Label htmlFor="title" className="text-right text-white">Title</Label>
-                                                            <Input value={songInfo.title} id="title" className="col-span-3 text-white border-gray-500" onChange={handleChange} />
-                                                            <Label htmlFor="artist" className="text-right text-white">Artist</Label>
-                                                            <Input value={songInfo.artist} id="artist" className="col-span-3 text-white border-gray-500" onChange={handleChange} />
-                                                            <Label htmlFor="album" className="text-right text-white">Album</Label>
-                                                            <Input value={songInfo.album} id="album" className="col-span-3 text-white border-gray-500" onChange={handleChange} />
+                                                        <div className="grid gap-2 py-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <Label htmlFor="id" className="text-white w-20">ID</Label>
+                                                                <Input value={songInfo.id} id="id" className="flex-1 text-white border-gray-500" disabled />
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <Label htmlFor="title" className="text-white w-20">Title</Label>
+                                                                <Input value={songInfo.title} id="title" className="flex-1 text-white border-gray-500" onChange={handleChange} />
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <Label htmlFor="artist" className="text-white w-20">Artist</Label>
+                                                                <Input value={songInfo.artist} id="artist" className="flex-1 text-white border-gray-500" onChange={handleChange} />
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <Label htmlFor="album" className="text-white w-20">Album</Label>
+                                                                <Input value={songInfo.album} id="album" className="flex-1 text-white border-gray-500" onChange={handleChange} />
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <Label htmlFor="vip" className="text-white w-20">VIP</Label>
+                                                                <Input value={songInfo.vip} id="vip" className="flex-1 text-white border-gray-500" onChange={handleChange} />
+                                                            </div>
                                                         </div>
                                                         <DialogFooter>
                                                             <DialogClose asChild>
                                                                 <Button type="button" variant="secondary">Close</Button>
                                                             </DialogClose>
-                                                            <Button type="submit">Save</Button>
+                                                            <Button className="hover:bg-gray-500" onClick={handleSave}>Save</Button>
                                                         </DialogFooter>
                                                     </DialogContent>
                                                 </Dialog>
+
                                             </TableCell>
                                         </TableRow>
                                     ))

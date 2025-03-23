@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken";
  *   get:
  *     tags:
  *       - Song
- *     summary: Get all songs (User must be logged in)
+ *     summary: Get paginated songs sorted by newest first (User must be logged in)
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -29,7 +29,7 @@ import jwt from "jsonwebtoken";
  *           default: 10
  *     responses:
  *       200:
- *         description: List of all songs
+ *         description: List of paginated songs sorted by newest first
  *       401:
  *         description: Unauthorized - Missing or invalid token
  *       500:
@@ -64,13 +64,10 @@ export async function GET(request: Request) {
         const url = new URL(request.url);
         const page = parseInt(url.searchParams.get("page") || "1");
         const limit = parseInt(url.searchParams.get("limit") || "10");
-
         const skip = (page - 1) * limit;
 
-        // Fetch songs with pagination and sort by newest first
-        const songs = await Song.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-
-        // Get the total number of songs to calculate pagination
+        // Fetch paginated songs sorted by newest first based on _id
+        const songs = await Song.find().sort({ _id: -1 }).skip(skip).limit(limit);
         const total = await Song.countDocuments();
 
         return NextResponse.json({
