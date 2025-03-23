@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
         const decoded = jwt.verify(token, JWT_SECRET as string) as { userId: string };
         const user = await User.findById(decoded.userId);
-        if (!user || user.role !== "1") {
+        if (!user || String(user.role) !== "1") {
             return NextResponse.json({ message: "Forbidden: Admin access required" }, { status: 403 });
         }
 

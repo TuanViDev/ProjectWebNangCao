@@ -8,8 +8,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTrigger, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Toaster } from "@/components/ui/sonner";
+import { Label } from "@/components/ui/label";;
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { toast } from "sonner";
 
@@ -20,6 +19,13 @@ export default function Explore() {
     const [maxPage, setMaxPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [loadTimeExceeded, setLoadTimeExceeded] = useState(false);
+    const [newSongInfo, setNewSongInfo] = useState({
+        title: "",
+        artist: "",
+        album: "",
+        vip: ""
+    });
+    
     const [songInfo, setSongInfo] = useState({
         id: "",
         title: "",
@@ -32,6 +38,57 @@ export default function Explore() {
         if (str.length <= 8) return str;
         return str.slice(0, 8) + "..." + str.slice(-8);
     }
+    const handleAddSong = async () => {
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+            toast.error("Bạn chưa đăng nhập!");
+            return;
+        }
+    
+        try {
+            const response = await fetch("/api/v1/song/add", {
+                method: "POST",
+                headers: {
+                    "accept": "*/*",
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: newSongInfo.title,
+                    artist: newSongInfo.artist,
+                    album: newSongInfo.album,
+                    isVip: newSongInfo.vip === "true"
+                })
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                toast.success(`${data.message}`);
+                setNewSongInfo({ title: "", artist: "", album: "", vip: "" }); // Reset form sau khi thêm
+            } else {
+                toast.error(`${data.message}`);
+            }
+        } catch (error) {
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        } finally {
+            // Refresh danh sách bài hát
+            setLoading(true);
+            const songResponse = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
+                method: "GET",
+                headers: {
+                    accept: "*/*",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+    
+            const songData = await songResponse.json();
+            setSongs(songData.data);
+            setMaxPage(songData.pagination.totalPages || 1);
+            setLoading(false);
+        }
+    };
+    
 
 
     const handleSave = async () => {
@@ -88,7 +145,9 @@ export default function Explore() {
 
 
 
-    const handleTrigger = async (songId: string) => {
+
+
+    const handleUpdate = async (songId: string) => {
         setSongInfo({
             id: songId,
             title: "",
@@ -148,15 +207,103 @@ export default function Explore() {
     }, [page]);
 
     return (
-        <div className="bg-gray-900 min-h-full text-white p-10 overflow-hidden flex justify-center w-[100%]">
+        <div className="bg-gray-900 min-h-full text-white p-[3%] overflow-hidden flex justify-center w-[100%]">
             <div className="w-[100%]">
                 <Card className="bg-gray-800 text-gray-200 border-none">
-                    <div className="flex justify-between items-center w-full pr-[25%]">
-                        <div className="flex-1 text-center">
-                            <span className="font-medium text-2xl">Danh sách bài hát</span>
-                        </div>
-                        <Input className="flex-1 max-w-[40%] border-gray-500" placeholder="Search"></Input>
-                    </div>
+                <div className="flex items-center w-full gap-x-4 pr-[10%]">
+    <div className="flex-1 text-center">
+        <span className="font-medium text-2xl">Danh sách bài hát</span>
+    </div>
+    <Input className="flex-grow max-w-[30%] border-gray-500" placeholder="Search"></Input>
+    <div>
+    <Dialog>
+    <DialogTrigger asChild>
+        <Button className="w-30 ml-[10%] bg-gray-600 hover:bg-gray-700">Thêm bài hát</Button>
+    </DialogTrigger>
+    <DialogContent className="bg-gray-700">
+        <DialogHeader>
+            <DialogTitle className="text-white">Thêm bài hát mới</DialogTitle>
+            <DialogDescription className="text-gray-300">
+                Nhập thông tin bài hát rồi nhấn "Lưu".
+            </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-2 py-4">
+            <div className="flex items-center gap-2">
+                <Label htmlFor="title" className="text-white w-20">Title</Label>
+                <Input
+                    value={newSongInfo.title}
+                    id="title"
+                    className="flex-1 text-white border-gray-500"
+                    onChange={(e) => setNewSongInfo({ ...newSongInfo, title: e.target.value })}
+                />
+            </div>
+            <div className="flex items-center gap-2">
+                <Label htmlFor="artist" className="text-white w-20">Artist</Label>
+                <Input
+                    value={newSongInfo.artist}
+                    id="artist"
+                    className="flex-1 text-white border-gray-500"
+                    onChange={(e) => setNewSongInfo({ ...newSongInfo, artist: e.target.value })}
+                />
+            </div>
+            <div className="flex items-center gap-2">
+                <Label htmlFor="album" className="text-white w-20">Album</Label>
+                <Input
+                    value={newSongInfo.album}
+                    id="album"
+                    className="flex-1 text-white border-gray-500"
+                    onChange={(e) => setNewSongInfo({ ...newSongInfo, album: e.target.value })}
+                />
+            </div>
+            <div className="flex items-center gap-2">
+                <Label htmlFor="vip" className="text-white w-20">VIP</Label>
+                <Input
+                    value={newSongInfo.vip}
+                    id="vip"
+                    className="flex-1 text-white border-gray-500"
+                    onChange={(e) => setNewSongInfo({ ...newSongInfo, vip: e.target.value })}
+                />
+            </div>
+            
+            <div className="flex items-center gap-2">
+    <Label htmlFor="picture" className="text-white w-20">VIP</Label>
+    
+    <div className="relative flex-1">
+        {/* Input file ẩn */}
+        <Input
+            type="file"
+            id="picture"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => setNewSongInfo({ ...newSongInfo, vip: e.target.value })}
+        />
+
+        {/* Button giả lập "Choose File" */}
+        <button 
+            type="button"
+            className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-500 rounded-md hover:bg-gray-600"
+        >
+            Chọn File
+        </button>
+    </div>
+</div>
+
+
+
+
+
+        </div>
+        <DialogFooter>
+            <DialogClose asChild>
+                <Button type="button" variant="secondary">Close</Button>
+            </DialogClose>
+            <Button className="hover:bg-gray-500" onClick={handleAddSong}>Lưu</Button>
+        </DialogFooter>
+    </DialogContent>
+</Dialog>
+
+    </div>
+</div>
+
 
                     <div className="pt-5 pr-[5%] pl-[5%]">
                         <Table>
@@ -172,62 +319,72 @@ export default function Explore() {
                                 {loading && loadTimeExceeded ? (
                                     [...Array(limit)].map((_, index) => (
                                         <TableRow key={index}>
-                                            <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                                            <TableCell><Skeleton className="h-6 w-40" /></TableCell>
-                                            <TableCell><Skeleton className="h-6 w-36" /></TableCell>
-                                            <TableCell className="text-right"><Skeleton className="h-6 w-10" /></TableCell>
+                                            <TableCell><Skeleton className="h-2 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-2 w-40" /></TableCell>
+                                            <TableCell><Skeleton className="h-2 w-36" /></TableCell>
+                                            <TableCell className="text-right"><Skeleton className="h-2 w-10" /></TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
-                                    songs.map((song, index) => (
-                                        <TableRow key={index} className="hover:bg-gray-700">
-                                            <TableCell className="font-medium">{shortId(song._id)}</TableCell>
-                                            <TableCell>{song.title}</TableCell>
-                                            <TableCell>{song.artist}</TableCell>
-                                            <TableCell className="text-right w-[10%]">
-                                                <Dialog>
-                                                    <DialogTrigger asChild onClick={() => handleTrigger(song._id)}>
-                                                        <Pencil size={25} className="text-gray-400 hover:text-white cursor-pointer ml-auto" />
-                                                    </DialogTrigger>
-                                                    <DialogContent className="bg-gray-700">
-                                                        <DialogHeader>
-                                                            <DialogTitle className="text-white">Chỉnh sửa bài hát</DialogTitle>
-                                                            <DialogDescription className="text-gray-300">
-                                                                Nhập vào các trường dữ liệu sau đó bấm vào lưu để cập nhật bài hát.
-                                                            </DialogDescription>
-                                                        </DialogHeader>
-                                                        <div className="grid gap-2 py-4">
-                                                            <div className="flex items-center gap-2">
-                                                                <Label htmlFor="id" className="text-white w-20">ID</Label>
-                                                                <Input value={songInfo.id} id="id" className="flex-1 text-white border-gray-500" disabled />
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <Label htmlFor="title" className="text-white w-20">Title</Label>
-                                                                <Input value={songInfo.title} id="title" className="flex-1 text-white border-gray-500" onChange={handleChange} />
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <Label htmlFor="artist" className="text-white w-20">Artist</Label>
-                                                                <Input value={songInfo.artist} id="artist" className="flex-1 text-white border-gray-500" onChange={handleChange} />
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <Label htmlFor="album" className="text-white w-20">Album</Label>
-                                                                <Input value={songInfo.album} id="album" className="flex-1 text-white border-gray-500" onChange={handleChange} />
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <Label htmlFor="vip" className="text-white w-20">VIP</Label>
-                                                                <Input value={songInfo.vip} id="vip" className="flex-1 text-white border-gray-500" onChange={handleChange} />
-                                                            </div>
-                                                        </div>
-                                                        <DialogFooter>
-                                                            <DialogClose asChild>
-                                                                <Button type="button" variant="secondary">Close</Button>
-                                                            </DialogClose>
-                                                            <Button className="hover:bg-gray-500" onClick={handleSave}>Save</Button>
-                                                        </DialogFooter>
-                                                    </DialogContent>
-                                                </Dialog>
-
-                                            </TableCell>
+                                    [...songs, ...Array(Math.max(0, 10 - songs.length)).fill(null)].map((song, index) => (
+                                        <TableRow key={index} className="hover:bg-gray-700 h-10">
+                                            {song ? (
+                                                <>
+                                                    <TableCell className="font-medium">{shortId(song._id)}</TableCell>
+                                                    <TableCell>{song.title}</TableCell>
+                                                    <TableCell>{song.artist}</TableCell>
+                                                    <TableCell className="text-right w-[10%]">
+                                                        <Dialog>
+                                                            <DialogTrigger asChild onClick={() => handleUpdate(song._id)}>
+                                                                <Pencil size={15} className="text-gray-400 hover:text-white cursor-pointer ml-auto" />
+                                                            </DialogTrigger>
+                                                            <DialogContent className="bg-gray-700">
+                                                                <DialogHeader>
+                                                                    <DialogTitle className="text-white">Chỉnh sửa bài hát</DialogTitle>
+                                                                    <DialogDescription className="text-gray-300">
+                                                                        Nhập vào các trường dữ liệu sau đó bấm vào lưu để cập nhật bài hát.
+                                                                    </DialogDescription>
+                                                                </DialogHeader>
+                                                                <div className="grid gap-2 py-4">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Label htmlFor="id" className="text-white w-20">ID</Label>
+                                                                        <Input value={songInfo.id} id="id" className="flex-1 text-white border-gray-500" disabled />
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Label htmlFor="title" className="text-white w-20">Title</Label>
+                                                                        <Input value={songInfo.title} id="title" className="flex-1 text-white border-gray-500" onChange={handleChange} />
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Label htmlFor="artist" className="text-white w-20">Artist</Label>
+                                                                        <Input value={songInfo.artist} id="artist" className="flex-1 text-white border-gray-500" onChange={handleChange} />
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Label htmlFor="album" className="text-white w-20">Album</Label>
+                                                                        <Input value={songInfo.album} id="album" className="flex-1 text-white border-gray-500" onChange={handleChange} />
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Label htmlFor="vip" className="text-white w-20">VIP</Label>
+                                                                        <Input value={songInfo.vip} id="vip" className="flex-1 text-white border-gray-500" onChange={handleChange} />
+                                                                    </div>
+                                                                </div>
+                                                                <DialogFooter>
+                                                                    <DialogClose asChild>
+                                                                        <Button type="button" variant="secondary">Close</Button>
+                                                                    </DialogClose>
+                                                                    <Button className="hover:bg-gray-500" onClick={handleSave}>Save</Button>
+                                                                </DialogFooter>
+                                                            </DialogContent>
+                                                        </Dialog>
+                                                    </TableCell>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <TableCell className="text-gray-500">-</TableCell>
+                                                    <TableCell className="text-gray-500">-</TableCell>
+                                                    <TableCell className="text-gray-500">-</TableCell>
+                                                    <TableCell className="text-right">-</TableCell>
+                                                </>
+                                            )}
                                         </TableRow>
                                     ))
                                 )}
