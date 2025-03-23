@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import Song from "@/model/Song";
 import User from "@/model/User";
 import connectDB from "@/lib/mongodb";
+import fs from "fs";
+import path from "path";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -32,6 +34,11 @@ const JWT_SECRET = process.env.JWT_SECRET;
  *               isVip:
  *                 type: boolean
  *                 default: false
+ *               image:
+ *                 type: string
+ *                 format: byte
+ *                 example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+ *                 description: "Optional base64-encoded image"
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -57,13 +64,36 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "Forbidden: Admin access required" }, { status: 403 });
         }
 
-        const { title, artist, album = null, isVip = false } = await req.json();
+        const { title, artist, album = null, isVip = false, image = null } = await req.json();
         if (!title || !artist) {
             return NextResponse.json({ message: "Missing required fields: title and artist" }, { status: 400 });
         }
 
-        const newSong = new Song({ title, artist, album, isVip, listen:0, like:0});
+        const newSong = new Song({ 
+            title, 
+            artist, 
+            album, 
+            isVip, 
+            listen: 0, 
+            like: 0 
+        });
         await newSong.save();
+
+        if (image) {
+            const base64Data = image.split(",")[1];  // Strip off the 'data:image/jpeg;base64,' part if present
+            const buffer = Buffer.from(base64Data, "base64");
+
+            const imgPath = path.join(process.cwd(), "public", "img", "song", `${newSong._id}.jpg`);
+            
+            // Ensure the directory exists
+            const dirPath = path.dirname(imgPath);
+            if (!fs.existsSync(dirPath)) {
+                fs.mkdirSync(dirPath, { recursive: true });
+            }
+
+            // Write the image file to the server
+            fs.writeFileSync(imgPath, buffer);
+        }
 
         return NextResponse.json({ message: "Song added successfully", song: newSong }, { status: 201 });
     } catch (error: any) {

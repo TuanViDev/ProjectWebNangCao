@@ -4,7 +4,6 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { useEffect, useState } from "react";
 
 export default function Explore() {
-
     const [songs, setSongs] = useState<any[]>([]);
 
     useEffect(() => {
@@ -20,7 +19,7 @@ export default function Explore() {
             const data = await response.json();
             setSongs(data.data);  // Adjusted to access the `data` field
         };
-    
+
         fetchSongs();
     }, []);
 
@@ -32,28 +31,35 @@ export default function Explore() {
         );
     }
 
+    const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        event.currentTarget.src = '/img/song/sample.jpg'; // Fallback to sample.jpg if image fails to load
+    };
+
     return (
         <div className="bg-gray-900 min-h-full text-white p-10 overflow-x-hidden">
-
             <div className="pl-15 pr-15 pb-10 pt-10 rounded-xl ">
                 <h1 className="text-4xl font-bold pb-5">Bài hát mới</h1>
                 <Carousel>
                     <CarouselContent className="pl-4 pr-4">
-
                         {songs.map((song) => (
-                            <CarouselItem key={song._id} className="sm:basis-1/2 md:basis-1/3 lg:basis-1/5 p-5 opacity-90 hover:opacity-100 hover:scale-110 transition-transform duration-300 ease-in-out">
-                                <img src="/img/song/1.jpg" className="rounded-sm w-full" />
+                            <CarouselItem key={song._id} className="sm:basis-1/2 md:basis-1/3 lg:basis-1/5 p-5 opacity-80 hover:opacity-100 hover:scale-110 transition-transform duration-300 ease-in-out">
+                                <div className="relative w-full" style={{ paddingTop: '100%' }}>
+                                    <img 
+                                        src={`/img/song/${song._id}.jpg`} 
+                                        className="absolute top-0 left-0 w-full h-full object-cover rounded-sm"
+                                        onError={handleImageError} // Trigger fallback image if error
+                                        alt={song.title} // Adding alt text for accessibility
+                                    />
+                                </div>
                                 <p className="pt-5 pb-1 font-sans text-base">{song.title}</p>
                                 <p className="text-gray-300 text-sm">{song.artist}</p> {/* Dynamic artist */}
                             </CarouselItem>
                         ))}
-
                     </CarouselContent>
                     <CarouselPrevious className="text-black" />
                     <CarouselNext className="text-black" />
                 </Carousel>
             </div>
-
         </div>
     );
 }

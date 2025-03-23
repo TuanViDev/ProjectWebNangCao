@@ -19,13 +19,16 @@ export default function Explore() {
     const [maxPage, setMaxPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [loadTimeExceeded, setLoadTimeExceeded] = useState(false);
+
     const [newSongInfo, setNewSongInfo] = useState({
         title: "",
         artist: "",
         album: "",
-        vip: ""
+        vip: "",
+        image: "" // Store the base64 of the image
     });
-    
+    const [previewImage, setPreviewImage] = useState<string | null>(null); // State for the image preview
+
     const [songInfo, setSongInfo] = useState({
         id: "",
         title: "",
@@ -38,13 +41,34 @@ export default function Explore() {
         if (str.length <= 8) return str;
         return str.slice(0, 8) + "..." + str.slice(-8);
     }
+
+    const handleimageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]; // Get the selected file
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64Image = reader.result as string; // Convert the file to base64
+    
+                // Immediately update both state variables
+                setNewSongInfo(prevState => ({
+                    ...prevState,
+                    image: base64Image, // Store the base64 image directly in the state
+                }));
+                setPreviewImage(base64Image); // Set the preview image as base64
+            };
+            reader.readAsDataURL(file); // Convert the file to base64
+        }
+    };
+    
+
+    
     const handleAddSong = async () => {
         const token = sessionStorage.getItem("token");
         if (!token) {
             toast.error("Bạn chưa đăng nhập!");
             return;
         }
-    
+
         try {
             const response = await fetch("/api/v1/song/add", {
                 method: "POST",
@@ -57,22 +81,24 @@ export default function Explore() {
                     title: newSongInfo.title,
                     artist: newSongInfo.artist,
                     album: newSongInfo.album,
-                    isVip: newSongInfo.vip === "true"
+                    isVip: newSongInfo.vip === "true",
+                    image: newSongInfo.image, // Add image (base64) to the request body
                 })
             });
-    
+
             const data = await response.json();
-    
+
             if (response.ok) {
                 toast.success(`${data.message}`);
-                setNewSongInfo({ title: "", artist: "", album: "", vip: "" }); // Reset form sau khi thêm
+                setNewSongInfo({ title: "", artist: "", album: "", vip: "", image: "" }); // Reset form after adding
+                setPreviewImage(null); // Reset the preview image
             } else {
                 toast.error(`${data.message}`);
             }
         } catch (error) {
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
         } finally {
-            // Refresh danh sách bài hát
+            // Refresh song list
             setLoading(true);
             const songResponse = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
                 method: "GET",
@@ -81,16 +107,13 @@ export default function Explore() {
                     Authorization: `Bearer ${token}`,
                 },
             });
-    
+
             const songData = await songResponse.json();
             setSongs(songData.data);
             setMaxPage(songData.pagination.totalPages || 1);
             setLoading(false);
         }
     };
-    
-
-
     const handleSave = async () => {
         const token = sessionStorage.getItem("token");
         if (!token) {
@@ -141,12 +164,6 @@ export default function Explore() {
             setLoading(false);
         }
     };
-
-
-
-
-
-
     const handleUpdate = async (songId: string) => {
         setSongInfo({
             id: songId,
@@ -210,99 +227,102 @@ export default function Explore() {
         <div className="bg-gray-900 min-h-full text-white p-[3%] overflow-hidden flex justify-center w-[100%]">
             <div className="w-[100%]">
                 <Card className="bg-gray-800 text-gray-200 border-none">
-                <div className="flex items-center w-full gap-x-4 pr-[10%]">
-    <div className="flex-1 text-center">
-        <span className="font-medium text-2xl">Danh sách bài hát</span>
-    </div>
-    <Input className="flex-grow max-w-[30%] border-gray-500" placeholder="Search"></Input>
-    <div>
-    <Dialog>
-    <DialogTrigger asChild>
-        <Button className="w-30 ml-[10%] bg-gray-600 hover:bg-gray-700">Thêm bài hát</Button>
-    </DialogTrigger>
-    <DialogContent className="bg-gray-700">
-        <DialogHeader>
-            <DialogTitle className="text-white">Thêm bài hát mới</DialogTitle>
-            <DialogDescription className="text-gray-300">
-                Nhập thông tin bài hát rồi nhấn "Lưu".
-            </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-2 py-4">
-            <div className="flex items-center gap-2">
-                <Label htmlFor="title" className="text-white w-20">Title</Label>
-                <Input
-                    value={newSongInfo.title}
-                    id="title"
-                    className="flex-1 text-white border-gray-500"
-                    onChange={(e) => setNewSongInfo({ ...newSongInfo, title: e.target.value })}
-                />
-            </div>
-            <div className="flex items-center gap-2">
-                <Label htmlFor="artist" className="text-white w-20">Artist</Label>
-                <Input
-                    value={newSongInfo.artist}
-                    id="artist"
-                    className="flex-1 text-white border-gray-500"
-                    onChange={(e) => setNewSongInfo({ ...newSongInfo, artist: e.target.value })}
-                />
-            </div>
-            <div className="flex items-center gap-2">
-                <Label htmlFor="album" className="text-white w-20">Album</Label>
-                <Input
-                    value={newSongInfo.album}
-                    id="album"
-                    className="flex-1 text-white border-gray-500"
-                    onChange={(e) => setNewSongInfo({ ...newSongInfo, album: e.target.value })}
-                />
-            </div>
-            <div className="flex items-center gap-2">
-                <Label htmlFor="vip" className="text-white w-20">VIP</Label>
-                <Input
-                    value={newSongInfo.vip}
-                    id="vip"
-                    className="flex-1 text-white border-gray-500"
-                    onChange={(e) => setNewSongInfo({ ...newSongInfo, vip: e.target.value })}
-                />
-            </div>
-            
-            <div className="flex items-center gap-2">
-    <Label htmlFor="picture" className="text-white w-20">VIP</Label>
-    
-    <div className="relative flex-1">
-        {/* Input file ẩn */}
-        <Input
-            type="file"
-            id="picture"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={(e) => setNewSongInfo({ ...newSongInfo, vip: e.target.value })}
-        />
+                    <div className="flex items-center w-full gap-x-4 pr-[10%]">
+                        <div className="flex-1 text-center">
+                            <span className="font-medium text-2xl">Danh sách bài hát</span>
+                        </div>
+                        <Input className="flex-grow max-w-[30%] border-gray-500" placeholder="Search"></Input>
+                        <div>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button className="w-30 ml-[10%] bg-gray-600 hover:bg-gray-700">Thêm bài hát</Button>
+                                </DialogTrigger>
+                                <DialogContent className="bg-gray-700">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-white">Thêm bài hát mới</DialogTitle>
+                                        <DialogDescription className="text-gray-300">
+                                            Nhập thông tin bài hát rồi nhấn "Lưu".
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="grid gap-2 py-4">
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="title" className="text-white w-20">Title</Label>
+                                            <Input
+                                                value={newSongInfo.title}
+                                                id="title"
+                                                className="flex-1 text-white border-gray-500"
+                                                onChange={(e) => setNewSongInfo({ ...newSongInfo, title: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="artist" className="text-white w-20">Artist</Label>
+                                            <Input
+                                                value={newSongInfo.artist}
+                                                id="artist"
+                                                className="flex-1 text-white border-gray-500"
+                                                onChange={(e) => setNewSongInfo({ ...newSongInfo, artist: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="album" className="text-white w-20">Album</Label>
+                                            <Input
+                                                value={newSongInfo.album}
+                                                id="album"
+                                                className="flex-1 text-white border-gray-500"
+                                                onChange={(e) => setNewSongInfo({ ...newSongInfo, album: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="vip" className="text-white w-20">VIP</Label>
+                                            <Input
+                                                value={newSongInfo.vip}
+                                                id="vip"
+                                                className="flex-1 text-white border-gray-500"
+                                                onChange={(e) => setNewSongInfo({ ...newSongInfo, vip: e.target.value })}
+                                            />
+                                        </div>
 
-        {/* Button giả lập "Choose File" */}
-        <button 
-            type="button"
-            className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-500 rounded-md hover:bg-gray-600"
-        >
-            Chọn File
-        </button>
-    </div>
-</div>
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="image" className="text-white w-20">image</Label>
 
+                                            <div className="relative flex-1">
+                                                {/* Input file ẩn */}
+                                                <Input
+                                                    type="file"
+                                                    id="image"
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    onChange={handleimageChange} // Gọi hàm khi chọn file
+                                                />
 
+                                                {previewImage && (
+                                                    <div>
+                                                        <h3>Image Preview:</h3>
+                                                        <img src={previewImage} alt="Preview" style={{ width: "200px", height: "auto" }} />
+                                                    </div>
+                                                )}
 
+                                                {/* Button giả lập "Choose File" */}
+                                                <button
+                                                    type="button"
+                                                    className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-500 rounded-md hover:bg-gray-600"
+                                                >
+                                                    Chọn File
+                                                </button>
+                                            </div>
+                                        </div>
 
+                                    </div>
+                                    <DialogFooter>
+                                        <DialogClose asChild>
+                                            <Button type="button" variant="secondary">Close</Button>
+                                        </DialogClose>
+                                        <Button className="hover:bg-gray-500" onClick={handleAddSong}>Lưu</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
 
-        </div>
-        <DialogFooter>
-            <DialogClose asChild>
-                <Button type="button" variant="secondary">Close</Button>
-            </DialogClose>
-            <Button className="hover:bg-gray-500" onClick={handleAddSong}>Lưu</Button>
-        </DialogFooter>
-    </DialogContent>
-</Dialog>
-
-    </div>
-</div>
+                        </div>
+                    </div>
 
 
                     <div className="pt-5 pr-[5%] pl-[5%]">
@@ -411,8 +431,6 @@ export default function Explore() {
                             </PaginationContent>
                         </Pagination>
                     </div>
-
-
                 </Card>
             </div>
         </div>
