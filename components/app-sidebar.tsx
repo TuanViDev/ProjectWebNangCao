@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation"; // Import usePathname
 import { Separator } from "@radix-ui/react-separator";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const items = [
   { title: "Khám phá", url: "/dashboard/explore", icon: Compass },
@@ -15,7 +16,7 @@ const items = [
 const adminItems = [
   { title: "Quản lý nghệ sĩ", url: "/dashboard/admin/artist", icon: User },
   { title: "Quản lý album", url: "/dashboard/admin/album", icon: Disc },
-  { title: "Quản lý bài hát", url: "/dashboard/song", icon: Headphones },
+  { title: "Quản lý bài hát", url: "/dashboard/admin/song", icon: Headphones },
 ];
 
 export function AppSidebar() {
@@ -23,6 +24,8 @@ export function AppSidebar() {
   const [role, setRole] = useState<{ role?: number } | null>(null);
   const router = useRouter();
   const pathname = usePathname(); // Lấy đường dẫn hiện tại
+
+  const roleName = ["Member","Admin"]
 
   useEffect(() => {
     try {
@@ -63,8 +66,8 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title} className="mb-2">
                     <SidebarMenuButton asChild>
-                      <button 
-                        onClick={() => router.push(item.url)} 
+                      <button
+                        onClick={() => router.push(item.url)}
                         className={`flex items-center space-x-2 px-4 py-8 w-full text-left rounded 
                           ${isActive ? "bg-gray-600" : "hover:bg-gray-600"}`}
                       >
@@ -84,8 +87,8 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={adminItem.title} className="mb-2">
                     <SidebarMenuButton asChild>
-                      <button 
-                        onClick={() => router.push(adminItem.url)} 
+                      <button
+                        onClick={() => router.push(adminItem.url)}
                         className={`flex items-center space-x-2 px-4 py-8 w-full text-left rounded 
                           ${isActive ? "bg-gray-600" : "hover:bg-gray-600"}`}
                       >
@@ -107,18 +110,25 @@ export function AppSidebar() {
         <div className="px-5 py-1 bg-gray-700 text-white rounded-sm flex flex-col items-center pt-3">
           <div className="flex justify-between w-full pb-3">
             <button className="px-4 py-1 bg-gray-900 text-white rounded-sm text-sm">
-              Member
+              {roleName[role?.role ?? 0]}
             </button>
-            <button 
-              className="px-4 py-1 text-gray-200 rounded-sm text-sm hover:bg-gray-500 cursor-pointer" 
+            <button
+              className="px-4 py-1 text-gray-200 rounded-sm text-sm hover:bg-gray-500 cursor-pointer"
               onClick={handleLogout}
             >
               Logout
             </button>
           </div>
-          <div>
-            <span className="text-sm">{user?.email || ""}</span>
+          <div className="flex items-center space-x-3 p-2 rounded-lg">
+            <Avatar className="w-10 h-10">
+              <AvatarImage src="https://github.com/shadcn.png" alt="User Avatar" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <div className="text-white text-ss">
+              <span>{user?.email || "Anonymous User"}</span>
+            </div>
           </div>
+
         </div>
       </SidebarFooter>
     </Sidebar>

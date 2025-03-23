@@ -67,8 +67,8 @@ export async function GET(request: Request) {
 
         const skip = (page - 1) * limit;
 
-        // Fetch songs with pagination
-        const songs = await Song.find().skip(skip).limit(limit);
+        // Fetch songs with pagination and sort by newest first
+        const songs = await Song.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
 
         // Get the total number of songs to calculate pagination
         const total = await Song.countDocuments();
