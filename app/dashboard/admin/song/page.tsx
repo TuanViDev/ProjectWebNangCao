@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTrigger, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";;
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Label } from "@/components/ui/label";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { toast } from "sonner";
 
 export default function Explore() {
@@ -25,16 +25,17 @@ export default function Explore() {
         artist: "",
         album: "",
         vip: "",
-        image: "" // Store the base64 of the image
+        image: ""
     });
-    const [previewImage, setPreviewImage] = useState<string | null>(null); // State for the image preview
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const [songInfo, setSongInfo] = useState({
         id: "",
         title: "",
         artist: "",
         album: "",
-        vip: ""
+        vip: "",
+        image: ""
     });
 
     function shortId(str: string) {
@@ -43,25 +44,37 @@ export default function Explore() {
     }
 
     const handleimageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]; // Get the selected file
+        const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                const base64Image = reader.result as string; // Convert the file to base64
-    
-                // Immediately update both state variables
+                const base64Image = reader.result as string;
                 setNewSongInfo(prevState => ({
                     ...prevState,
-                    image: base64Image, // Store the base64 image directly in the state
+                    image: base64Image,
                 }));
-                setPreviewImage(base64Image); // Set the preview image as base64
+                setPreviewImage(base64Image);
             };
-            reader.readAsDataURL(file); // Convert the file to base64
+            reader.readAsDataURL(file);
         }
     };
-    
 
-    
+    const handleimageChangeUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64Image = reader.result as string;
+                setSongInfo(prevState => ({
+                    ...prevState,
+                    image: base64Image,
+                }));
+                setPreviewImage(base64Image);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleAddSong = async () => {
         const token = sessionStorage.getItem("token");
         if (!token) {
@@ -82,7 +95,7 @@ export default function Explore() {
                     artist: newSongInfo.artist,
                     album: newSongInfo.album,
                     isVip: newSongInfo.vip === "true",
-                    image: newSongInfo.image, // Add image (base64) to the request body
+                    image: newSongInfo.image,
                 })
             });
 
@@ -90,15 +103,14 @@ export default function Explore() {
 
             if (response.ok) {
                 toast.success(`${data.message}`);
-                setNewSongInfo({ title: "", artist: "", album: "", vip: "", image: "" }); // Reset form after adding
-                setPreviewImage(null); // Reset the preview image
+                setNewSongInfo({ title: "", artist: "", album: "", vip: "", image: "" });
+                setPreviewImage(null);
             } else {
                 toast.error(`${data.message}`);
             }
         } catch (error) {
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
         } finally {
-            // Refresh song list
             setLoading(true);
             const songResponse = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
                 method: "GET",
@@ -114,6 +126,7 @@ export default function Explore() {
             setLoading(false);
         }
     };
+
     const handleSave = async () => {
         const token = sessionStorage.getItem("token");
         if (!token) {
@@ -134,7 +147,8 @@ export default function Explore() {
                     title: songInfo.title,
                     artist: songInfo.artist,
                     album: songInfo.album,
-                    isVip: songInfo.vip === "true"
+                    isVip: songInfo.vip === "true",
+                    image: songInfo.image
                 })
             });
 
@@ -148,7 +162,6 @@ export default function Explore() {
         } catch (error) {
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
         } finally {
-            // 🔄 Fetch lại danh sách bài hát dù có lỗi hay không
             setLoading(true);
             const songResponse = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
                 method: "GET",
@@ -164,6 +177,7 @@ export default function Explore() {
             setLoading(false);
         }
     };
+
     const handleUpdate = async (songId: string) => {
         setSongInfo({
             id: songId,
@@ -171,7 +185,9 @@ export default function Explore() {
             artist: "",
             album: "",
             vip: "",
+            image: ""
         });
+        setPreviewImage(null);
 
         const token = sessionStorage.getItem("token");
         const response = await fetch(`/api/v1/song/find?songId=${songId}`, {
@@ -183,13 +199,28 @@ export default function Explore() {
         });
         const data = await response.json();
 
+        // Set song info from API response
         setSongInfo({
             id: data.song._id,
             title: data.song.title,
             artist: data.song.artist,
             album: data.song.album,
-            vip: data.song.isVip,
+            vip: data.song.isVip.toString(),
+            image: "" // We'll set this separately
         });
+
+        // Check for existing image by setting the preview to the expected URL
+        const imageUrl = `/img/song/${songId}.jpg`;
+        // Use fetch to check if the image exists (optional, but more reliable)
+        fetch(imageUrl)
+            .then(res => {
+                if (res.ok) {
+                    setPreviewImage(imageUrl); // Set preview to the existing image URL
+                }
+            })
+            .catch(() => {
+                setPreviewImage(null); // No image exists
+            });
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,36 +312,30 @@ export default function Explore() {
                                                 onChange={(e) => setNewSongInfo({ ...newSongInfo, vip: e.target.value })}
                                             />
                                         </div>
-
                                         <div className="flex items-center gap-2">
-                                            <Label htmlFor="image" className="text-white w-20">image</Label>
-
+                                            <Label htmlFor="image" className="text-white w-20">Image</Label>
                                             <div className="relative flex-1">
-                                                {/* Input file ẩn */}
                                                 <Input
                                                     type="file"
                                                     id="image"
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                    onChange={handleimageChange} // Gọi hàm khi chọn file
+                                                    onChange={handleimageChange}
                                                 />
-
                                                 {previewImage && (
                                                     <div>
-                                                        <h3>Image Preview:</h3>
-                                                        <img src={previewImage} alt="Preview" style={{ width: "200px", height: "auto" }} />
+                                                        <img src={previewImage} alt="Preview" className="top-0 left-0 w-full h-full object-cover rounded-sm aspect-square" style={{ width: "auto", height: "auto" }} />
                                                     </div>
                                                 )}
-
-                                                {/* Button giả lập "Choose File" */}
-                                                <button
-                                                    type="button"
-                                                    className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-500 rounded-md hover:bg-gray-600"
-                                                >
-                                                    Chọn File
-                                                </button>
+                                                {!previewImage && (
+                                                    <button
+                                                        type="button"
+                                                        className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-500 rounded-md hover:bg-gray-600"
+                                                    >
+                                                        Chọn File
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
-
                                     </div>
                                     <DialogFooter>
                                         <DialogClose asChild>
@@ -320,15 +345,13 @@ export default function Explore() {
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
-
                         </div>
                     </div>
-
 
                     <div className="pt-5 pr-[5%] pl-[5%]">
                         <Table>
                             <TableHeader>
-                                <TableRow className="hover:bg-gray-700">
+                                <TableRow className="hover:bg-gray-700 border-gray-100">
                                     <TableHead className="w-[20%] text-white">ID</TableHead>
                                     <TableHead className="text-white">Tên bài hát</TableHead>
                                     <TableHead className="text-white">Tác giả</TableHead>
@@ -347,7 +370,7 @@ export default function Explore() {
                                     ))
                                 ) : (
                                     [...songs, ...Array(Math.max(0, 10 - songs.length)).fill(null)].map((song, index) => (
-                                        <TableRow key={index} className="hover:bg-gray-700 h-10">
+                                        <TableRow key={index} className="hover:bg-gray-700 h-10 border-gray-400">
                                             {song ? (
                                                 <>
                                                     <TableCell className="font-medium">{shortId(song._id)}</TableCell>
@@ -386,6 +409,35 @@ export default function Explore() {
                                                                         <Label htmlFor="vip" className="text-white w-20">VIP</Label>
                                                                         <Input value={songInfo.vip} id="vip" className="flex-1 text-white border-gray-500" onChange={handleChange} />
                                                                     </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Label htmlFor="image" className="text-white w-20">Image</Label>
+                                                                        <div className="relative flex-1">
+                                                                            <Input
+                                                                                type="file"
+                                                                                id="image"
+                                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                                                onChange={handleimageChangeUpdate}
+                                                                            />
+                                                                            {previewImage && (
+                                                                                <div>
+                                                                                    <img 
+                                                                                        src={previewImage} 
+                                                                                        alt="Preview" 
+                                                                                        className="top-0 left-0 w-full h-full object-cover rounded-sm aspect-square"
+                                                                                        style={{ width: "auto", height: "auto" }} 
+                                                                                    />
+                                                                                </div>
+                                                                            )}
+                                                                            {!previewImage && (
+                                                                                <button
+                                                                                    type="button"
+                                                                                    className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-500 rounded-md hover:bg-gray-600"
+                                                                                >
+                                                                                    Chọn File
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                                 <DialogFooter>
                                                                     <DialogClose asChild>
@@ -417,7 +469,7 @@ export default function Explore() {
                             <PaginationContent className="flex gap-2">
                                 <PaginationItem>
                                     <Button className="bg-gray-600 hover:bg-gray-500" onClick={() => setPage((prev) => Math.max(prev - 1, 1))} disabled={page === 1}>
-                                        &laquo; Previous
+                                        « Previous
                                     </Button>
                                 </PaginationItem>
                                 <PaginationItem>
@@ -425,7 +477,7 @@ export default function Explore() {
                                 </PaginationItem>
                                 <PaginationItem>
                                     <Button className="bg-gray-600 hover:bg-gray-500" onClick={() => setPage((prev) => Math.min(prev + 1, maxPage))} disabled={page === maxPage}>
-                                        Next &raquo;
+                                        Next »
                                     </Button>
                                 </PaginationItem>
                             </PaginationContent>
