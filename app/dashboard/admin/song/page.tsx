@@ -19,6 +19,7 @@ export default function Explore() {
     const [maxPage, setMaxPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [loadTimeExceeded, setLoadTimeExceeded] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(""); // Thêm state cho ô tìm kiếm
 
     const [newSongInfo, setNewSongInfo] = useState({
         title: "",
@@ -111,20 +112,12 @@ export default function Explore() {
         } catch (error) {
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
         } finally {
-            setLoading(true);
-            const songResponse = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
-                method: "GET",
-                headers: {
-                    accept: "*/*",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            const songData = await songResponse.json();
-            setSongs(songData.data);
-            setMaxPage(songData.pagination.totalPages || 1);
-            setLoading(false);
+            fetchSongs(); // Cập nhật lại danh sách sau khi thêm
         }
+    };
+
+    const handleDelete = async () => {
+        return;
     };
 
     const handleSave = async () => {
@@ -162,19 +155,7 @@ export default function Explore() {
         } catch (error) {
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
         } finally {
-            setLoading(true);
-            const songResponse = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
-                method: "GET",
-                headers: {
-                    accept: "*/*",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            const songData = await songResponse.json();
-            setSongs(songData.data);
-            setMaxPage(songData.pagination.totalPages || 1);
-            setLoading(false);
+            fetchSongs(); // Cập nhật lại danh sách sau khi lưu
         }
     };
 
@@ -199,27 +180,24 @@ export default function Explore() {
         });
         const data = await response.json();
 
-        // Set song info from API response
         setSongInfo({
             id: data.song._id,
             title: data.song.title,
             artist: data.song.artist,
             album: data.song.album,
             vip: data.song.isVip.toString(),
-            image: "" // We'll set this separately
+            image: ""
         });
 
-        // Check for existing image by setting the preview to the expected URL
         const imageUrl = `/img/song/${songId}.jpg`;
-        // Use fetch to check if the image exists (optional, but more reliable)
         fetch(imageUrl)
             .then(res => {
                 if (res.ok) {
-                    setPreviewImage(imageUrl); // Set preview to the existing image URL
+                    setPreviewImage(imageUrl);
                 }
             })
             .catch(() => {
-                setPreviewImage(null); // No image exists
+                setPreviewImage(null);
             });
     };
 
@@ -230,29 +208,65 @@ export default function Explore() {
         });
     };
 
-    useEffect(() => {
-        const fetchSongs = async () => {
-            setLoading(true);
-            setLoadTimeExceeded(false);
-            const timeout = setTimeout(() => setLoadTimeExceeded(true), 500);
+    // Hàm lấy danh sách bài hát (có thể từ API phân trang hoặc tìm kiếm)
+    const fetchSongs = async () => {
+        setLoading(true);
+        setLoadTimeExceeded(false);
+        const timeout = setTimeout(() => setLoadTimeExceeded(true), 500);
 
-            const token = sessionStorage.getItem("token");
-            const response = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
-                method: "GET",
-                headers: {
-                    accept: "*/*",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            clearTimeout(timeout);
-            const data = await response.json();
-            setSongs(data.data);
-            setMaxPage(data.pagination.totalPages || 1);
+        const token = sessionStorage.getItem("token");
+        try {
+            let response;
+            if (searchQuery) {
+                // Nếu có từ khóa tìm kiếm, gọi API search
+                response = await fetch(`/api/v1/song/search?query=${encodeURIComponent(searchQuery)}`, {
+                    method: "GET",
+                    headers: {
+                        accept: "*/*",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const data = await response.json();
+                clearTimeout(timeout);
+                if (response.ok) {
+                    setSongs(data.songs || []);
+                    setMaxPage(1); // Không phân trang khi tìm kiếm
+                    setPage(1); // Reset về trang 1
+                } else {
+                    toast.error(data.message || "Không tìm thấy bài hát");
+                    setSongs([]);
+                }
+            } else {
+                // Nếu không có từ khóa, gọi API phân trang
+                response = await fetch(`/api/v1/song?page=${page}&limit=${limit}`, {
+                    method: "GET",
+                    headers: {
+                        accept: "*/*",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const data = await response.json();
+                clearTimeout(timeout);
+                setSongs(data.data || []);
+                setMaxPage(data.pagination.totalPages || 1);
+            }
+        } catch (error) {
+            toast.error("Có lỗi xảy ra khi tải danh sách bài hát!");
+            setSongs([]);
+        } finally {
             setLoading(false);
-        };
+        }
+    };
 
+    // Gọi fetchSongs khi page hoặc searchQuery thay đổi
+    useEffect(() => {
         fetchSongs();
-    }, [page]);
+    }, [page, searchQuery]);
+
+    // Xử lý khi người dùng nhập vào ô tìm kiếm
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+    };
 
     return (
         <div className="bg-gray-900 min-h-full text-white p-[3%] overflow-hidden flex justify-center w-[100%]">
@@ -262,11 +276,21 @@ export default function Explore() {
                         <div className="flex-1 text-center">
                             <span className="font-medium text-2xl">Danh sách bài hát</span>
                         </div>
-                        <Input className="flex-grow max-w-[30%] border-gray-500" placeholder="Search"></Input>
+                        <Input
+                            className="flex-grow max-w-[30%] border-gray-500"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={handleSearchChange} // Cập nhật searchQuery khi người dùng nhập
+                        />
                         <div>
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button className="w-30 ml-[10%] bg-gray-600 hover:bg-gray-700">Thêm bài hát</Button>
+                                    <Button
+                                        className="w-30 ml-[10%] bg-gray-600 hover:bg-gray-700"
+                                        onClick={() => setPreviewImage(null)}
+                                    >
+                                        Thêm bài hát
+                                    </Button>
                                 </DialogTrigger>
                                 <DialogContent className="bg-gray-700">
                                     <DialogHeader>
@@ -362,9 +386,9 @@ export default function Explore() {
                                 {loading && loadTimeExceeded ? (
                                     [...Array(limit)].map((_, index) => (
                                         <TableRow key={index}>
-                                            <TableCell><Skeleton className="h-2 w-32" /></TableCell>
-                                            <TableCell><Skeleton className="h-2 w-40" /></TableCell>
-                                            <TableCell><Skeleton className="h-2 w-36" /></TableCell>
+                                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                                            <TableCell><Skeleton className="h-5 w-36" /></TableCell>
                                             <TableCell className="text-right"><Skeleton className="h-2 w-10" /></TableCell>
                                         </TableRow>
                                     ))
@@ -420,11 +444,11 @@ export default function Explore() {
                                                                             />
                                                                             {previewImage && (
                                                                                 <div>
-                                                                                    <img 
-                                                                                        src={previewImage} 
-                                                                                        alt="Preview" 
+                                                                                    <img
+                                                                                        src={previewImage}
+                                                                                        alt="Preview"
                                                                                         className="top-0 left-0 w-full h-full object-cover rounded-sm aspect-square"
-                                                                                        style={{ width: "auto", height: "auto" }} 
+                                                                                        style={{ width: "auto", height: "auto" }}
                                                                                     />
                                                                                 </div>
                                                                             )}
@@ -439,11 +463,16 @@ export default function Explore() {
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <DialogFooter>
-                                                                    <DialogClose asChild>
-                                                                        <Button type="button" variant="secondary">Close</Button>
-                                                                    </DialogClose>
-                                                                    <Button className="hover:bg-gray-500" onClick={handleSave}>Save</Button>
+                                                                <DialogFooter className="flex justify-between w-full">
+                                                                    <div className="flex justify-start w-full">
+                                                                        <Button className="hover:bg-red-800 bg-gray-500" onClick={handleDelete}>Delete</Button>
+                                                                    </div>
+                                                                    <div className="flex justify-end">
+                                                                        <DialogClose asChild>
+                                                                            <Button type="button" variant="secondary">Close</Button>
+                                                                        </DialogClose>
+                                                                        <Button className="hover:bg-gray-500 ml-[20%]" onClick={handleSave}>Save</Button>
+                                                                    </div>
                                                                 </DialogFooter>
                                                             </DialogContent>
                                                         </Dialog>
@@ -464,25 +493,36 @@ export default function Explore() {
                         </Table>
                     </div>
 
-                    <div className="flex justify-center py-4">
-                        <Pagination className="space-x-2">
-                            <PaginationContent className="flex gap-2">
-                                <PaginationItem>
-                                    <Button className="bg-gray-600 hover:bg-gray-500" onClick={() => setPage((prev) => Math.max(prev - 1, 1))} disabled={page === 1}>
-                                        « Previous
-                                    </Button>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <Button variant="default">{page} / {maxPage}</Button>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <Button className="bg-gray-600 hover:bg-gray-500" onClick={() => setPage((prev) => Math.min(prev + 1, maxPage))} disabled={page === maxPage}>
-                                        Next »
-                                    </Button>
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-                    </div>
+                    {/* Chỉ hiển thị phân trang khi không có tìm kiếm */}
+                    {!searchQuery && (
+                        <div className="flex justify-center py-4">
+                            <Pagination className="space-x-2">
+                                <PaginationContent className="flex gap-2">
+                                    <PaginationItem>
+                                        <Button
+                                            className="bg-gray-600 hover:bg-gray-500"
+                                            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                                            disabled={page === 1}
+                                        >
+                                            « Previous
+                                        </Button>
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <Button variant="default">{page} / {maxPage}</Button>
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <Button
+                                            className="bg-gray-600 hover:bg-gray-500"
+                                            onClick={() => setPage((prev) => Math.min(prev + 1, maxPage))}
+                                            disabled={page === maxPage}
+                                        >
+                                            Next »
+                                        </Button>
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    )}
                 </Card>
             </div>
         </div>
