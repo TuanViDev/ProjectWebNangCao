@@ -117,7 +117,41 @@ export default function Explore() {
     };
 
     const handleDelete = async () => {
-        return;
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+            toast.error("Bạn chưa đăng nhập!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/v1/song/delete?songId=${songInfo.id}`, {
+                method: "DELETE",
+                headers: {
+                    "accept": "*/*",
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success(`${data.message}`); // Hiển thị "Song deleted successfully"
+                setSongInfo({
+                    id: songInfo.id,
+                    title: "Bài hát đã bị xóa",
+                    artist: "",
+                    album: "",
+                    vip: "",
+                    image: ""
+                });
+
+                fetchSongs(); // Cập nhật lại danh sách bài hát
+            } else {
+                toast.error(`${data.message}`); // Hiển thị lỗi nếu có
+            }
+        } catch (error) {
+            toast.error("Có lỗi xảy ra khi xóa bài hát!");
+        }
     };
 
     const handleSave = async () => {
@@ -465,7 +499,33 @@ export default function Explore() {
                                                                 </div>
                                                                 <DialogFooter className="flex justify-between w-full">
                                                                     <div className="flex justify-start w-full">
-                                                                        <Button className="hover:bg-red-800 bg-gray-500" onClick={handleDelete}>Delete</Button>
+                                                                        <Dialog>
+                                                                            <DialogTrigger asChild>
+                                                                                <Button className="hover:bg-red-800 bg-gray-500">Delete</Button>
+                                                                            </DialogTrigger>
+                                                                            <DialogContent className="bg-gray-700">
+                                                                                <DialogHeader>
+                                                                                    <DialogTitle className="text-white">Xác nhận xóa bài hát</DialogTitle>
+                                                                                    <DialogDescription className="text-gray-300">
+                                                                                        Bạn có chắc chắn muốn xóa bài hát "{songInfo.title}" không? Hành động này không thể hoàn tác.
+                                                                                    </DialogDescription>
+                                                                                </DialogHeader>
+                                                                                <DialogFooter>
+                                                                                    <DialogClose asChild>
+                                                                                        <Button type="button" variant="secondary">Hủy</Button>
+                                                                                    </DialogClose>
+                                                                                    <DialogClose asChild>
+                                                                                        <Button
+                                                                                            className="hover:bg-red-800 bg-red-600"
+                                                                                            onClick={handleDelete}
+                                                                                        >
+                                                                                            Xác nhận
+                                                                                        </Button>
+                                                                                    </DialogClose>
+
+                                                                                </DialogFooter>
+                                                                            </DialogContent>
+                                                                        </Dialog>
                                                                     </div>
                                                                     <div className="flex justify-end">
                                                                         <DialogClose asChild>
