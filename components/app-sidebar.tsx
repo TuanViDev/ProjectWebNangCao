@@ -62,11 +62,11 @@ export function AppSidebar() {
                 const isActive = pathname === item.url;
                 return (
                   <SidebarMenuItem key={item.title} className="mb-2">
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild className={`hover:bg-gray-50 hover:text-black ${isActive ? "text-black" : "hover:text-white"}`}>
                       <button
                         onClick={() => router.push(item.url)}
                         className={`flex items-center space-x-2 px-4 py-8 w-full text-left rounded transition-all duration-300 ease-in-out
-                          ${isActive ? "bg-gray-600 scale-105 shadow-lg" : "hover:bg-gray-600 hover:scale-102"}`}
+                          ${isActive ? "bg-gray-100 scale-105 shadow-lg text-black" : "hover:bg-gray-600 hover:scale-102"}`}
                       >
                         <item.icon className="w-5 h-5 transition-transform duration-300" />
                         <span className="text-lg">{item.title}</span>
@@ -82,11 +82,11 @@ export function AppSidebar() {
                 const isActive = pathname === adminItem.url;
                 return (
                   <SidebarMenuItem key={adminItem.title} className="mb-2">
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild className={`hover:bg-gray-50 hover:text-black ${isActive ? "" : "hover:text-white"}`}>
                       <button
                         onClick={() => router.push(adminItem.url)}
                         className={`flex items-center space-x-2 px-4 py-8 w-full text-left rounded transition-all duration-300 ease-in-out
-                          ${isActive ? "bg-gray-600 scale-105 shadow-lg" : "hover:bg-gray-600 hover:scale-102"}`}
+                          ${isActive ? "bg-gray-100 scale-105 shadow-lg text-black" : "hover:bg-gray-600 hover:scale-102"}`}
                       >
                         <adminItem.icon className="w-5 h-5 transition-transform duration-300" />
                         <span className="text-lg">{adminItem.title}</span>
