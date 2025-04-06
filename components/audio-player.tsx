@@ -43,7 +43,6 @@ export const AudioPlayer = () => {
     // Init Howler.js và tự động play khi đổi bài
     useEffect(() => {
         if (currentSong) {
-            // Cleanup howl cũ nếu tồn tại
             if (howlRef.current) {
                 howlRef.current.unload()
             }
@@ -51,7 +50,7 @@ export const AudioPlayer = () => {
             const howl = new Howl({
                 src: [`/mp3/${currentSong._id}.mp3`],
                 html5: true,
-                autoplay: true, // Tự động play khi đổi bài
+                autoplay: true,
                 onplay: () => {
                     setIsPlaying(true)
                     setDuration(howl.duration())
@@ -75,7 +74,6 @@ export const AudioPlayer = () => {
 
             howlRef.current = howl
 
-            // Cập nhật currentTime liên tục
             const interval = setInterval(() => {
                 if (howl.playing()) {
                     setCurrentTime(howl.seek() as number)
@@ -140,16 +138,14 @@ export const AudioPlayer = () => {
         return `${minutes}:${seconds.toString().padStart(2, "0")}`
     }
 
+    // Nếu không có currentSong thì return null để ẩn hoàn toàn
     if (!currentSong) {
-        return (
-            <div className="h-20 bg-gray-800 text-white flex items-center justify-center">
-                <p className="text-gray-400">Select a song to play</p>
-            </div>
-        )
+        return null
     }
 
+    // Chỉ render player khi có currentSong
     return (
-        <div className="h-30 bg-gray-900 text-white flex items-center px-6 border-t border-gray-700">
+        <div className="h-[12%] bg-gray-900 text-white flex items-center px-6 border-2 border-gray-800 ">
             {/* Song Info */}
             <div className="flex items-center w-1/4">
                 <div className="w-16 h-16 bg-gray-700 rounded overflow-hidden mr-4">
@@ -214,7 +210,7 @@ export const AudioPlayer = () => {
             </div>
 
             {/* Volume & Other Controls */}
-            <div className="flex items-center space-x-4 w-1/4 justify-end">
+            <div className="flex items-center space-x-4 w-1/4 justify-end mr-[5%]">
                 <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full" onClick={toggleMute}>
                     {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
                 </button>
@@ -235,9 +231,6 @@ export const AudioPlayer = () => {
                 </div>
                 <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full">
                     <Share2 size={18} />
-                </button>
-                <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full">
-                    <ListMusic size={18} />
                 </button>
             </div>
         </div>
