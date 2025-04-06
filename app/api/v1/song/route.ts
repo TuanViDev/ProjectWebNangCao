@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Song from "@/model/Song";
 import connectDB from "@/lib/mongodb";
 import jwt from "jsonwebtoken";
+import "@/model/Artist";
+import "@/model/Album";
+
 
 /**
  * @swagger
