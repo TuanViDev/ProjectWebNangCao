@@ -8,7 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search } from "lucide-react"
+import { Search } from 'lucide-react'
 import { AudioPlayer } from "@/components/audio-player"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -30,8 +30,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return isAuthenticated ? (
     <SidebarProvider>
-      {/* Add WaveSurfer script */}
-
       <div className="flex h-screen w-full relative">
         <AppSidebar />
 
@@ -55,6 +53,4 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </SidebarProvider>
-  ) : null
-}
-
+  )
