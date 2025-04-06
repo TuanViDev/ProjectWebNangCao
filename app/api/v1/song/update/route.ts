@@ -1,3 +1,4 @@
+// api/v1/song/update/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import Song from "@/model/Song";
@@ -7,6 +8,7 @@ import User from "@/model/User";
 import connectDB from "@/lib/mongodb";
 import fs from "fs";
 import path from "path";
+import mongoose from "mongoose";
 
 /**
  * @swagger
@@ -18,7 +20,7 @@ import path from "path";
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -44,6 +46,10 @@ import path from "path";
  *                 format: byte
  *                 example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
  *                 description: "Optional base64-encoded image"
+ *               mp3:
+ *                 type: string
+ *                 format: binary
+ *                 description: "Optional MP3 file"
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -103,7 +109,15 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ message: "Forbidden: Admin access required" }, { status: 403 });
         }
 
-        const { songId, title, artist, album, isVip, image } = await req.json();
+        const formData = await req.formData();
+        const songId = formData.get("songId") as string;
+        const title = formData.get("title") as string;
+        const artist = formData.get("artist") as string;
+        const album = formData.get("album") as string;
+        const isVip = formData.get("isVip") as string;
+        const image = formData.get("image") as string;
+        const mp3File = formData.get("mp3") as File;
+
         if (!songId) {
             return NextResponse.json({ message: "Missing required field: songId" }, { status: 400 });
         }
@@ -113,37 +127,55 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ message: "Song not found" }, { status: 404 });
         }
 
-        // Cập nhật artist nếu thay đổi
+        // Update artist if changed
         if (artist && artist !== song.artist.toString()) {
             const newArtist = await Artist.findById(artist);
             if (!newArtist) return NextResponse.json({ message: "Artist not found" }, { status: 404 });
 
-            // Xóa song khỏi artist cũ
-            await Artist.updateOne({ _id: song.artist }, { $pull: { songs: songId } });
-            // Thêm song vào artist mới
-            newArtist.songs.push(songId);
+            await Artist.updateOne(
+                { _id: song.artist },
+                { $pull: { songs: new mongoose.Types.ObjectId(songId) } }
+            );
+            newArtist.songs.push(new mongoose.Types.ObjectId(songId));
             await newArtist.save();
-            song.artist = artist;
+            song.artist = new mongoose.Types.ObjectId(artist);
         }
 
-        // Cập nhật album nếu thay đổi
-        if (album !== undefined && album !== song.album?.toString()) {
-            if (song.album) {
-                // Xóa song khỏi album cũ
-                await Album.updateOne({ _id: song.album }, { $pull: { songs: songId } });
+        // Update album if changed
+        if (album !== undefined) {
+            const currentAlbumId = song.album?.toString();
+            if (currentAlbumId && album !== currentAlbumId) {
+                await Album.updateOne(
+                    { _id: song.album },
+                    { $pull: { songs: new mongoose.Types.ObjectId(songId) } }
+                );
             }
-            if (album) {
+            if (album === "" || album === null) {
+                song.album = undefined;
+            } else if (album && album !== currentAlbumId) {
                 const newAlbum = await Album.findById(album);
                 if (!newAlbum) return NextResponse.json({ message: "Album not found" }, { status: 404 });
-                newAlbum.songs.push(songId);
+                newAlbum.songs.push(new mongoose.Types.ObjectId(songId));
                 await newAlbum.save();
+                song.album = new mongoose.Types.ObjectId(album);
             }
-            song.album = album || null;
         }
 
         if (title) song.title = title;
-        if (isVip !== undefined) song.isVip = isVip;
+        if (isVip !== undefined) song.isVip = isVip === "true";
 
+        // Update MP3 file if provided
+        if (mp3File) {
+            const mp3Path = path.join(process.cwd(), "public", "mp3", `${song._id}.mp3`);
+            const mp3Dir = path.dirname(mp3Path);
+            if (!fs.existsSync(mp3Dir)) {
+                fs.mkdirSync(mp3Dir, { recursive: true });
+            }
+            const mp3Buffer = Buffer.from(await mp3File.arrayBuffer());
+            fs.writeFileSync(mp3Path, mp3Buffer);
+        }
+
+        // Update image if provided
         if (image) {
             const base64Data = image.split(",")[1];
             const buffer = Buffer.from(base64Data, "base64");
@@ -153,7 +185,6 @@ export async function PUT(req: NextRequest) {
             if (!fs.existsSync(dirPath)) {
                 fs.mkdirSync(dirPath, { recursive: true });
             }
-
             fs.writeFileSync(imgPath, buffer);
         }
 

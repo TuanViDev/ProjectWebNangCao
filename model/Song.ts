@@ -1,22 +1,23 @@
+// Model Song
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 interface ISong extends Document {
     title: string;
-    artist: mongoose.Types.ObjectId; // Tham chiếu đến Artist
-    album?: mongoose.Types.ObjectId; // Tham chiếu đến Album (tùy chọn)
+    artist: mongoose.Types.ObjectId;
+    album?: mongoose.Types.ObjectId;
     isVip?: boolean;
-    play: number; // Lượt nghe
-    like: number; // Lượt thích
+    play: number;
+    like: number;
 }
 
 const SongSchema: Schema<ISong> = new mongoose.Schema(
     {
         title: { type: String, required: true },
-        artist: { type: mongoose.Schema.Types.ObjectId, ref: "Artist", required: true }, // Tham chiếu đến Artist
-        album: { type: mongoose.Schema.Types.ObjectId, ref: "Album", default: null }, // Tham chiếu đến Album
+        artist: { type: mongoose.Schema.Types.ObjectId, ref: "Artist", required: true },
+        album: { type: mongoose.Schema.Types.ObjectId, ref: "Album", default: null },
         isVip: { type: Boolean, default: false },
-        play: { type: Number, default: 0 }, // Mặc định 0 lượt nghe
-        like: { type: Number, default: 0 }, // Mặc định 0 lượt thích
+        play: { type: Number, default: 0 },
+        like: { type: Number, default: 0 },
     },
     { timestamps: true }
 );

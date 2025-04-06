@@ -1,3 +1,4 @@
+// SongManager component
 "use client";
 
 import { Card } from "@/components/ui/card";
@@ -24,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 
-// Triển khai Combobox
+// Combobox component remains unchanged
 interface ComboboxProps {
   options: { value: string; label: string }[];
   value: string;
@@ -86,8 +87,23 @@ export default function SongManager() {
   const [loadTimeExceeded, setLoadTimeExceeded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [newSongInfo, setNewSongInfo] = useState({ title: "", artist: "", album: "", isVip: "false", image: "" });
-  const [songInfo, setSongInfo] = useState({ id: "", title: "", artist: "", album: "", isVip: "false", image: "" });
+  const [newSongInfo, setNewSongInfo] = useState({ 
+    title: "", 
+    artist: "", 
+    album: "", 
+    isVip: "false", 
+    image: "",
+    mp3: null as File | null 
+  });
+  const [songInfo, setSongInfo] = useState({ 
+    id: "", 
+    title: "", 
+    artist: "", 
+    album: "", 
+    isVip: "false", 
+    image: "",
+    mp3: null as File | null 
+  });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const [artists, setArtists] = useState<any[]>([]);
@@ -166,30 +182,44 @@ export default function SongManager() {
     }
   };
 
+  const handleMp3Change = (e: React.ChangeEvent<HTMLInputElement>, isUpdate = false) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (isUpdate) {
+        setSongInfo((prev) => ({ ...prev, mp3: file }));
+      } else {
+        setNewSongInfo((prev) => ({ ...prev, mp3: file }));
+      }
+    }
+  };
+
   const handleAddSong = async () => {
     const token = sessionStorage.getItem("token");
     if (!token) return toast.error("Bạn chưa đăng nhập!");
     if (!newSongInfo.artist) return toast.error("Vui lòng chọn nghệ sĩ!");
+    if (!newSongInfo.mp3) return toast.error("Vui lòng chọn file MP3!");
 
     const artist = artists.find((a) => a.name === newSongInfo.artist);
     const album = albums.find((a) => a.title === newSongInfo.album);
 
+    const formData = new FormData();
+    formData.append("title", newSongInfo.title);
+    formData.append("artist", artist?._id || "");
+    if (album) formData.append("album", album._id);
+    formData.append("isVip", newSongInfo.isVip);
+    if (newSongInfo.image) formData.append("image", newSongInfo.image);
+    if (newSongInfo.mp3) formData.append("mp3", newSongInfo.mp3);
+
     try {
       const response = await fetch("/api/v1/song/add", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newSongInfo.title,
-          artist: artist?._id || "",
-          album: album?._id || null,
-          isVip: newSongInfo.isVip === "true",
-          image: newSongInfo.image,
-        }),
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
       const data = await response.json();
       if (response.ok) {
         toast.success(data.message);
-        setNewSongInfo({ title: "", artist: "", album: "", isVip: "false", image: "" });
+        setNewSongInfo({ title: "", artist: "", album: "", isVip: "false", image: "", mp3: null });
         setPreviewImage(null);
         fetchSongs();
       } else {
@@ -229,18 +259,20 @@ export default function SongManager() {
     const artist = artists.find((a) => a.name === songInfo.artist);
     const album = albums.find((a) => a.title === songInfo.album);
 
+    const formData = new FormData();
+    formData.append("songId", songInfo.id);
+    formData.append("title", songInfo.title);
+    formData.append("artist", artist?._id || "");
+    if (album) formData.append("album", album._id);
+    formData.append("isVip", songInfo.isVip);
+    if (songInfo.image) formData.append("image", songInfo.image);
+    if (songInfo.mp3) formData.append("mp3", songInfo.mp3);
+
     try {
       const response = await fetch("/api/v1/song/update", {
         method: "PUT",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          songId: songInfo.id,
-          title: songInfo.title,
-          artist: artist?._id || "",
-          album: album?._id || null,
-          isVip: songInfo.isVip === "true",
-          image: songInfo.image,
-        }),
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
       const data = await response.json();
       if (response.ok) {
@@ -271,6 +303,7 @@ export default function SongManager() {
         album: album?.title || "",
         isVip: data.song.isVip.toString(),
         image: "",
+        mp3: null,
       });
       setPreviewImage(`/img/song/${songId}.jpg`);
     } else {
@@ -417,6 +450,7 @@ export default function SongManager() {
                       <Input
                         type="file"
                         id="image"
+                        accept="image/*"
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         onChange={(e) => handleImageChange(e)}
                       />
@@ -428,9 +462,26 @@ export default function SongManager() {
                         />
                       ) : (
                         <Button className="w-full bg-gray-700 border-gray-500 hover:bg-gray-600">
-                          Chọn File
+                          Chọn File Ảnh
                         </Button>
                       )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="mp3" className="text-white w-20">
+                      MP3 *
+                    </Label>
+                    <div className="relative flex-1">
+                      <Input
+                        type="file"
+                        id="mp3"
+                        accept=".mp3"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => handleMp3Change(e)}
+                      />
+                      <Button className="w-full bg-gray-700 border-gray-500 hover:bg-gray-600">
+                        {newSongInfo.mp3 ? newSongInfo.mp3.name : "Chọn File MP3"}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -615,6 +666,7 @@ export default function SongManager() {
                                         <Input
                                           type="file"
                                           id="image"
+                                          accept="image/*"
                                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                           onChange={(e) => handleImageChange(e, true)}
                                         />
@@ -626,64 +678,81 @@ export default function SongManager() {
                                           />
                                         ) : (
                                           <Button className="w-full bg-gray-700 border-gray-500 hover:bg-gray-600">
-                                            Chọn File
+                                            Chọn File Ảnh
                                           </Button>
                                         )}
                                       </div>
                                     </div>
+                                    <div className="flex items-center gap-2">
+                                      <Label
+                                        htmlFor="mp3"
+                                        className="text-white w-20"
+                                      >
+                                        MP3
+                                      </Label>
+                                      <div className="relative flex-1">
+                                        <Input
+                                          type="file"
+                                          id="mp3"
+                                          accept=".mp3"
+                                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                          onChange={(e) => handleMp3Change(e, true)}
+                                        />
+                                        <Button className="w-full bg-gray-700 border-gray-500 hover:bg-gray-600">
+                                          {songInfo.mp3 ? songInfo.mp3.name : "Chọn File MP3 (tùy chọn)"}
+                                        </Button>
+                                      </div>
+                                    </div>
                                   </div>
                                   <DialogFooter className="flex flex-col w-full gap-4 sm:flex-row sm:justify-between">
- {/* Nhóm nút Delete và Close */}
- <div className="flex flex-wrap gap-4">
- <Dialog>
- <DialogTrigger asChild>
- <Button className="hover:bg-red-800 bg-gray-500">
- Delete
- </Button>
- </DialogTrigger>
- <DialogContent className="bg-gray-700">
- <DialogHeader>
- <DialogTitle className="text-white">
- Xác nhận xóa bài hát
- </DialogTitle>
- <DialogDescription className="text-gray-300">
- Bạn có chắc chắn muốn xóa bài hát "{songInfo.title}" không?
- </DialogDescription>
- </DialogHeader>
- <DialogFooter className="flex flex-wrap gap-4">
- <DialogClose asChild>
- <Button type="button" variant="secondary">
- Hủy
- </Button>
- </DialogClose>
- <DialogClose asChild>
- <Button
- className="hover:bg-red-800 bg-red-600"
- onClick={handleDelete}
- >
- Xác nhận
- </Button>
- </DialogClose>
- </DialogFooter>
- </DialogContent>
- </Dialog>
- <DialogClose asChild>
- <Button type="button" variant="secondary">
- Close
- </Button>
- </DialogClose>
- </div>
-
- {/* Nút Save nằm dưới cuối */}
- <div className="flex justify-end">
- <Button
- className="hover:bg-gray-500"
- onClick={handleSave}
- >
- Save
- </Button>
- </div>
-</DialogFooter>
+                                    <div className="flex flex-wrap gap-4">
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button className="hover:bg-red-800 bg-gray-500">
+                                            Delete
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="bg-gray-700">
+                                          <DialogHeader>
+                                            <DialogTitle className="text-white">
+                                              Xác nhận xóa bài hát
+                                            </DialogTitle>
+                                            <DialogDescription className="text-gray-300">
+                                              Bạn có chắc chắn muốn xóa bài hát "{songInfo.title}" không?
+                                            </DialogDescription>
+                                          </DialogHeader>
+                                          <DialogFooter className="flex flex-wrap gap-4">
+                                            <DialogClose asChild>
+                                              <Button type="button" variant="secondary">
+                                                Hủy
+                                              </Button>
+                                            </DialogClose>
+                                            <DialogClose asChild>
+                                              <Button
+                                                className="hover:bg-red-800 bg-red-600"
+                                                onClick={handleDelete}
+                                              >
+                                                Xác nhận
+                                              </Button>
+                                            </DialogClose>
+                                          </DialogFooter>
+                                        </DialogContent>
+                                      </Dialog>
+                                      <DialogClose asChild>
+                                        <Button type="button" variant="secondary">
+                                          Close
+                                        </Button>
+                                      </DialogClose>
+                                    </div>
+                                    <div className="flex justify-end">
+                                      <Button
+                                        className="hover:bg-gray-500"
+                                        onClick={handleSave}
+                                      >
+                                        Save
+                                      </Button>
+                                    </div>
+                                  </DialogFooter>
                                 </DialogContent>
                               </Dialog>
                             </TableCell>

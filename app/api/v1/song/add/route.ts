@@ -1,3 +1,4 @@
+// api/v1/song/add
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import Song from "@/model/Song";
@@ -19,7 +20,30 @@ import mongoose from "mongoose";
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *алар
+
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import Song from "@/model/Song";
+import Artist from "@/model/Artist";
+import Album from "@/model/Album";
+import User from "@/model/User";
+import connectDB from "@/lib/mongodb";
+import fs from "fs";
+import path from "path";
+import mongoose from "mongoose";
+
+/**
+ * @swagger
+ * /api/v1/song/add:
+ *   post:
+ *     tags:
+ *       - Song
+ *     summary: Add a new song (Admin only)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -42,6 +66,10 @@ import mongoose from "mongoose";
  *                 format: byte
  *                 example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
  *                 description: "Optional base64-encoded image"
+ *               mp3:
+ *                 type: string
+ *                 format: binary
+ *                 description: "Required MP3 file"
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -99,16 +127,21 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "Forbidden: Admin access required" }, { status: 403 });
         }
 
-        const { title, artist, album = null, isVip = false, image = null } = await req.json();
-        if (!title || !artist) {
-            return NextResponse.json({ message: "Missing required fields: title and artist" }, { status: 400 });
+        const formData = await req.formData();
+        const title = formData.get("title") as string;
+        const artist = formData.get("artist") as string;
+        const album = formData.get("album") as string || null;
+        const isVip = formData.get("isVip") === "true";
+        const image = formData.get("image") as string | null;
+        const mp3File = formData.get("mp3") as File;
+
+        if (!title || !artist || !mp3File) {
+            return NextResponse.json({ message: "Missing required fields: title, artist, and mp3 file" }, { status: 400 });
         }
 
-        // Kiểm tra artist có tồn tại không
         const artistDoc = await Artist.findById(artist);
         if (!artistDoc) return NextResponse.json({ message: "Artist not found" }, { status: 404 });
 
-        // Kiểm tra album nếu có
         let albumDoc = null;
         if (album) {
             albumDoc = await Album.findById(album);
@@ -118,16 +151,16 @@ export async function POST(req: NextRequest) {
         const newSong = new Song({ title, artist, album, isVip, play: 0, like: 0 });
         await newSong.save();
 
-        // Cập nhật mảng songs trong Artist
-        artistDoc.songs.push(newSong._id as mongoose.Types.ObjectId);
-        await artistDoc.save();
-
-        // Cập nhật mảng songs trong Album nếu có
-        if (albumDoc) {
-            albumDoc.songs.push(newSong._id as mongoose.Types.ObjectId);
-            await albumDoc.save();
+        // Save MP3 file
+        const mp3Path = path.join(process.cwd(), "public", "mp3", `${newSong._id}.mp3`);
+        const mp3Dir = path.dirname(mp3Path);
+        if (!fs.existsSync(mp3Dir)) {
+            fs.mkdirSync(mp3Dir, { recursive: true });
         }
+        const mp3Buffer = Buffer.from(await mp3File.arrayBuffer());
+        fs.writeFileSync(mp3Path, mp3Buffer);
 
+        // Save image if provided
         if (image) {
             const base64Data = image.split(",")[1];
             const buffer = Buffer.from(base64Data, "base64");
@@ -137,8 +170,17 @@ export async function POST(req: NextRequest) {
             if (!fs.existsSync(dirPath)) {
                 fs.mkdirSync(dirPath, { recursive: true });
             }
-
             fs.writeFileSync(imgPath, buffer);
+        }
+
+        // Update Artist
+        artistDoc.songs.push(newSong._id as mongoose.Types.ObjectId);
+        await artistDoc.save();
+
+        // Update Album if exists
+        if (albumDoc) {
+            albumDoc.songs.push(newSong._id as mongoose.Types.ObjectId);
+            await albumDoc.save();
         }
 
         return NextResponse.json({ message: "Song added successfully", song: newSong }, { status: 201 });
