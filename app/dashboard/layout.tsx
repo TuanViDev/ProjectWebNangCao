@@ -42,6 +42,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex-1 w-full h-full overflow-auto border-none">
             {children}
           </div>
+
+          <div className="flex text-lg bg-gray-700 w-full text-white" id="player">
+           
+          </div>
         </main>
       </div>
     </SidebarProvider>

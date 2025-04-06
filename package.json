@@ -19,6 +19,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.9",
+    "@wavesurfer/react": "^1.0.10",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -42,7 +43,8 @@
     "swagger-ui-dist": "^5.20.1",
     "swagger-ui-react": "^5.0.0-beta.0",
     "tailwind-merge": "^3.0.2",
-    "tw-animate-css": "^1.2.4"
+    "tw-animate-css": "^1.2.4",
+    "wavesurfer.js": "^7.9.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.14",

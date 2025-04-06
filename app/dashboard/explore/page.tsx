@@ -10,10 +10,12 @@ import {
 import { useEffect, useState } from "react";
 
 import {ThumbsUp} from 'lucide-react';
+import { useRouter } from "next/navigation";
 
 export default function Explore() {
     const [newSongs, setNewSongs] = useState<any[]>([]); // Bài hát mới
     const [mostLikedSongs, setMostLikedSongs] = useState<any[]>([]); // Bài hát có lượt thích cao nhất
+    const router = useRouter();
 
     // Fetch bài hát mới
     useEffect(() => {
@@ -98,6 +100,7 @@ export default function Explore() {
                     <CarouselContent className="pl-4 pr-4">
                         {newSongs.map((song) => (
                             <CarouselItem
+                            onClick={() => router.push(`/dashboard/player/${song._id}`)}
                                 key={song._id}
                                 className="sm:basis-1/2 md:basis-1/3 lg:basis-1/5 p-5 opacity-80 hover:opacity-100 hover:scale-110 transition-transform duration-300 ease-in-out"
                             >
@@ -127,6 +130,7 @@ export default function Explore() {
                         {mostLikedSongs.length > 0 ? (
                             mostLikedSongs.map((song) => (
                                 <CarouselItem
+                                onClick={() => router.push(`/dashboard/player/${song._id}`)}
                                     key={song._id}
                                     className="sm:basis-1/2 md:basis-1/3 lg:basis-1/5 p-5 opacity-80 hover:opacity-100 hover:scale-110 transition-transform duration-300 ease-in-out"
                                 >
