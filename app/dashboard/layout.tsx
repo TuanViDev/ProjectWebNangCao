@@ -37,7 +37,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         <main className="flex-1 flex flex-col w-full h-full overflow-hidden">
           {/* Top Bar */}
-          <div className="h-16 flex text-lg bg-gray-700 w-full text-white pl-5 pt-3">
+          <div className="h-16 flex text-lg bg-gray-700 w-full text-white pl-5 pt-3 pb-5">
             <SidebarTrigger />
             <div className="flex-1 flex justify-center items-center space-x-2 pt-2">
               <Input className="w-1/3 border-none bg-gray-500" />

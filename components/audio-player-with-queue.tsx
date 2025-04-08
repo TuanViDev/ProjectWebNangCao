@@ -1,9 +1,23 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Shuffle, Heart, Share2 } from "lucide-react"
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+  Repeat,
+  Shuffle,
+  Heart,
+  Share2,
+  ListMusic,
+} from "lucide-react"
 import * as RadixSlider from "@radix-ui/react-slider"
 import { Howl } from "howler"
+import { Queue } from "@/components/queue"
+import { toast } from "sonner"
 
 interface Song {
   _id: string
@@ -22,7 +36,7 @@ interface Song {
   like?: number
 }
 
-export const AudioPlayer = () => {
+export const AudioPlayerWithQueue = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(80)
@@ -32,6 +46,8 @@ export const AudioPlayer = () => {
   const [isLiked, setIsLiked] = useState(false)
   const [isRepeat, setIsRepeat] = useState(false)
   const [isShuffle, setIsShuffle] = useState(false)
+  const [queue, setQueue] = useState<Song[]>([])
+  const [queueIndex, setQueueIndex] = useState(0)
 
   const howlRef = useRef<Howl | null>(null)
 
@@ -63,6 +79,9 @@ export const AudioPlayer = () => {
           if (isRepeat) {
             howl.seek(0)
             howl.play()
+          } else if (queue.length > 0 && queueIndex < queue.length - 1) {
+            // Play next song in queue
+            playNextSong()
           } else {
             setIsPlaying(false)
           }
@@ -89,21 +108,56 @@ export const AudioPlayer = () => {
         howl.unload()
       }
     }
-  }, [currentSong, isRepeat])
+  }, [currentSong, isRepeat, queue, queueIndex])
 
   // Handle song change event
   useEffect(() => {
     const handleSongChange = (event: CustomEvent) => {
       const song = event.detail
       setCurrentSong(song)
+
+      // Add to queue  => {
+
+      // Add to queue
+      setQueue((prevQueue) => {
+        if (!prevQueue.some((item) => item._id === song._id)) {
+          return [...prevQueue, song]
+        }
+        return prevQueue
+      })
+
+      // Set queue index to the current song
+      setQueueIndex((prevQueue) => {
+        const index = queue.findIndex((item) => item._id === song._id)
+        return index >= 0 ? index : queue.length
+      })
+    }
+
+    // Handle add to queue event
+    const handleAddToQueue = (event: CustomEvent) => {
+      const song = event.detail
+      setQueue((prevQueue) => {
+        if (!prevQueue.some((item) => item._id === song._id)) {
+          return [...prevQueue, song]
+        }
+        return prevQueue
+      })
+
+      // If no song is playing, play the first song in queue
+      if (!currentSong) {
+        setCurrentSong(song)
+        setQueueIndex(queue.length)
+      }
     }
 
     window.addEventListener("playSong", handleSongChange as EventListener)
+    window.addEventListener("addToQueue", handleAddToQueue as EventListener)
 
     return () => {
       window.removeEventListener("playSong", handleSongChange as EventListener)
+      window.removeEventListener("addToQueue", handleAddToQueue as EventListener)
     }
-  }, [])
+  }, [currentSong, queue])
 
   // Update volume
   useEffect(() => {
@@ -181,6 +235,9 @@ export const AudioPlayer = () => {
     try {
       const token = sessionStorage.getItem("token")
       if (!token) {
+        toast.error("Authentication required", {
+          description: "Please sign in to like songs",
+        })
         return
       }
 
@@ -197,14 +254,35 @@ export const AudioPlayer = () => {
         const data = await response.json()
         setIsLiked(data.liked)
 
-        // Update the like count without recreating the entire song object
-        // This prevents the song from restarting
-        if (currentSong) {
-          currentSong.like = data.likeCount
+        // Update the like count in the current song
+        setCurrentSong((prev) => {
+          if (!prev) return null
+          return {
+            ...prev,
+            like: data.likeCount,
+          }
+        })
+
+        if (data.liked) {
+          toast.success("Song liked", {
+            description: data.message,
+          })
+        } else {
+          toast("Song unliked", {
+            description: data.message,
+          })
         }
+      } else {
+        const error = await response.json()
+        toast.error("Error", {
+          description: error.message || "Failed to like/unlike song",
+        })
       }
     } catch (error) {
       console.error("Error toggling like:", error)
+      toast.error("Error", {
+        description: "Failed to like/unlike song",
+      })
     }
   }
 
@@ -225,6 +303,40 @@ export const AudioPlayer = () => {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`
   }
 
+  // Play next song
+  const playNextSong = () => {
+    if (queue.length === 0) return
+
+    if (isShuffle) {
+      // Play random song from queue
+      const randomIndex = Math.floor(Math.random() * queue.length)
+      setCurrentSong(queue[randomIndex])
+      setQueueIndex(randomIndex)
+    } else {
+      // Play next song in queue
+      const nextIndex = (queueIndex + 1) % queue.length
+      setCurrentSong(queue[nextIndex])
+      setQueueIndex(nextIndex)
+    }
+  }
+
+  // Play previous song
+  const playPreviousSong = () => {
+    if (queue.length === 0) return
+
+    if (currentTime > 3) {
+      // If current time is more than 3 seconds, restart the song
+      if (howlRef.current) {
+        howlRef.current.seek(0)
+      }
+    } else {
+      // Play previous song in queue
+      const prevIndex = (queueIndex - 1 + queue.length) % queue.length
+      setCurrentSong(queue[prevIndex])
+      setQueueIndex(prevIndex)
+    }
+  }
+
   // If no currentSong, return null to hide completely
   if (!currentSong) {
     return null
@@ -233,6 +345,7 @@ export const AudioPlayer = () => {
   // Only render player when there is a currentSong
   return (
     <>
+      {/* <Toaster position="top-right" /> */}
       <div className="h-[12%] bg-gray-900 text-white flex items-center px-6 border-2 border-gray-800">
         {/* Song Info */}
         <div className="flex items-center w-1/4">
@@ -273,12 +386,8 @@ export const AudioPlayer = () => {
             </button>
             <button
               className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"
-              onClick={() => {
-                if (howlRef.current) {
-                  howlRef.current.seek(0)
-                }
-              }}
-              aria-label="Restart song"
+              onClick={playPreviousSong}
+              aria-label="Previous song"
             >
               <SkipBack size={20} />
             </button>
@@ -291,7 +400,7 @@ export const AudioPlayer = () => {
             </button>
             <button
               className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"
-              disabled
+              onClick={playNextSong}
               aria-label="Next song"
             >
               <SkipForward size={20} />
@@ -351,6 +460,13 @@ export const AudioPlayer = () => {
           <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full" aria-label="Share">
             <Share2 size={18} />
           </button>
+          <Queue
+            trigger={
+              <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full" aria-label="Queue">
+                <ListMusic size={18} />
+              </button>
+            }
+          />
         </div>
       </div>
     </>
