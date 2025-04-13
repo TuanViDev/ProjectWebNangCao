@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Album from "@/model/Album";
 import connectDB from "@/lib/mongodb";
-import removeDiacritics from "@/lib/removeDiacritics";
 
 /**
  * @swagger
@@ -58,16 +57,16 @@ export async function GET(req: NextRequest) {
     try {
         await connectDB();
 
-        const query = req.nextUrl.searchParams.get("query");
+        const query = decodeURIComponent(req.nextUrl.searchParams.get("query") || "");
         if (!query) {
             return NextResponse.json({ message: "Query parameter is required" }, { status: 400 });
         }
 
-        const normalizedQuery = removeDiacritics(query);
-        const regexQuery = new RegExp(normalizedQuery, "i");
         const albums = await Album.find({
-            title: { $regex: regexQuery },
-        }).populate("songs");
+            title: { $regex: query, $options: "i" },
+        })
+            .collation({ locale: "vi", strength: 1 }) // Tìm kiếm không phân biệt dấu
+            .populate("songs");
 
         if (albums.length === 0) {
             return NextResponse.json({ message: "No albums found" }, { status: 404 });

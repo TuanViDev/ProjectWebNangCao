@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Artist from "@/model/Artist";
 import connectDB from "@/lib/mongodb";
-import removeDiacritics from "@/lib/removeDiacritics";
 
 /**
  * @swagger
@@ -60,19 +59,19 @@ export async function GET(req: NextRequest) {
     try {
         await connectDB();
 
-        const query = req.nextUrl.searchParams.get("query");
+        const query = decodeURIComponent(req.nextUrl.searchParams.get("query") || "");
         if (!query) {
             return NextResponse.json({ message: "Query parameter is required" }, { status: 400 });
         }
 
-        const normalizedQuery = removeDiacritics(query);
-        const regexQuery = new RegExp(normalizedQuery, "i");
         const artists = await Artist.find({
             $or: [
-                { name: { $regex: regexQuery } },
-                { bio: { $regex: regexQuery } },
+                { name: { $regex: query, $options: "i" } },
+                { bio: { $regex: query, $options: "i" } },
             ],
-        }).populate("songs");
+        })
+            .collation({ locale: "vi", strength: 1 }) // Tìm kiếm không phân biệt dấu
+            .populate("songs");
 
         if (artists.length === 0) {
             return NextResponse.json({ message: "No artists found" }, { status: 404 });

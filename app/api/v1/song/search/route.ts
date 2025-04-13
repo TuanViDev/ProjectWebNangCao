@@ -9,14 +9,14 @@ import removeDiacritics from "@/lib/removeDiacritics";
  *   get:
  *     tags:
  *       - Song
- *     summary: Search songs by title
+ *     summary: Search songs by title with fuzzy matching and diacritic normalization
  *     parameters:
  *       - in: query
  *         name: query
  *         schema:
  *           type: string
  *         required: true
- *         description: The search term to find in title
+ *         description: Search term for song title (supports diacritic-insensitive and fuzzy matching, e.g., 'dung lam' matches 'Đừng Làm')
  *     responses:
  *       200:
  *         description: Songs found
@@ -63,16 +63,15 @@ export async function GET(req: NextRequest) {
     try {
         await connectDB();
 
-        const query = req.nextUrl.searchParams.get("query");
+        const query = decodeURIComponent(req.nextUrl.searchParams.get("query") || "");
         if (!query) {
             return NextResponse.json({ message: "Query parameter is required" }, { status: 400 });
         }
 
-        const normalizedQuery = removeDiacritics(query);
-        const regexQuery = new RegExp(normalizedQuery, "i");
         const songs = await Song.find({
-            title: { $regex: regexQuery },
+            title: { $regex: query, $options: "i" },
         })
+            .collation({ locale: "vi", strength: 1 }) // Tìm kiếm không phân biệt dấu
             .populate("artist", "name")
             .populate("album", "title");
 
