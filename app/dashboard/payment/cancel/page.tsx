@@ -1,13 +1,50 @@
 "use client";
 
 import type React from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { XCircle } from "lucide-react";
 
 export default function CancelPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const cancelOrder = async () => {
+      const code = searchParams.get("code");
+      const id = searchParams.get("id");
+      const cancel = searchParams.get("cancel");
+      const status = searchParams.get("status");
+      const orderCode = searchParams.get("orderCode");
+
+      if (code && id && cancel && status && orderCode) {
+        try {
+          const response = await fetch("/api/v1/payment/cancel", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              code,
+              id,
+              cancel: cancel === "true",
+              status,
+              orderCode: Number(orderCode),
+            }),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            console.error("Error cancelling payment:", data.message);
+          }
+        } catch (error) {
+          console.error("Error calling cancel API:", error);
+        }
+      }
+    };
+    cancelOrder();
+  }, [searchParams]);
 
   return (
     <div className="bg-gray-900 min-h-screen text-white flex items-center justify-center p-6 md:p-10">
