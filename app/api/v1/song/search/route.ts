@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import Song from "@/model/Song";
-import connectDB from "@/lib/mongodb";
-import removeDiacritics from "@/lib/removeDiacritics";
+import { type NextRequest, NextResponse } from "next/server"
+import Song from "@/model/Song"
+import connectDB from "@/lib/mongodb"
 
 /**
  * @swagger
@@ -60,28 +59,37 @@ import removeDiacritics from "@/lib/removeDiacritics";
  *         description: Server error
  */
 export async function GET(req: NextRequest) {
+  try {
+    await connectDB()
+
+    // Safely decode the query parameter
+    let query = ""
     try {
-        await connectDB();
-
-        const query = decodeURIComponent(req.nextUrl.searchParams.get("query") || "");
-        if (!query) {
-            return NextResponse.json({ message: "Query parameter is required" }, { status: 400 });
-        }
-
-        const songs = await Song.find({
-            title: { $regex: query, $options: "i" },
-        })
-            .collation({ locale: "vi", strength: 1 }) // Tìm kiếm không phân biệt dấu
-            .populate("artist", "name")
-            .populate("album", "title");
-
-        if (songs.length === 0) {
-            return NextResponse.json({ message: "No songs found" }, { status: 404 });
-        }
-
-        return NextResponse.json({ songs }, { status: 200 });
+      query = decodeURIComponent(req.nextUrl.searchParams.get("query") || "")
     } catch (error) {
-        console.error("Search Songs Error:", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+      // If decoding fails, use the raw query string
+      query = req.nextUrl.searchParams.get("query") || ""
+      console.log("Error decoding query parameter:", error)
     }
+
+    if (!query) {
+      return NextResponse.json({ message: "Query parameter is required" }, { status: 400 })
+    }
+
+    const songs = await Song.find({
+      title: { $regex: query, $options: "i" },
+    })
+      .collation({ locale: "vi", strength: 1 }) // Tìm kiếm không phân biệt dấu
+      .populate("artist", "name")
+      .populate("album", "title")
+
+    if (songs.length === 0) {
+      return NextResponse.json({ message: "No songs found", songs: [] }, { status: 404 })
+    }
+
+    return NextResponse.json({ songs }, { status: 200 })
+  } catch (error) {
+    console.error("Search Songs Error:", error)
+    return NextResponse.json({ message: "Server error", error: (error as Error).message }, { status: 500 })
+  }
 }

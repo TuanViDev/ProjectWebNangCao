@@ -59,7 +59,7 @@ export default function AlbumsPage() {
   if (loading) {
     return (
       <div className="bg-gray-900 min-h-full text-white p-10">
-        <h1 className="text-4xl font-bold mb-8">Albums</h1>
+        <h1 className="text-4xl font-bold mb-8">Album mới nhất</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, index) => (
             <Card key={index} className="bg-gray-800 border-gray-700 animate-pulse">
@@ -79,7 +79,7 @@ export default function AlbumsPage() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-10">
-      <h1 className="text-4xl font-bold mb-8">Albums</h1>
+      <h1 className="text-4xl font-bold mb-8">Album mới nhất</h1>
 
       {albums.length === 0 ? (
         <div className="text-center py-10">
@@ -95,10 +95,10 @@ export default function AlbumsPage() {
 
               <Card
                 key={album._id}
-                className=" bg-gray-800 border-gray-700 transition-colors overflow-hidden"
+                className=" bg-gray-800 border-none hover:bg-gray-700 transition-colors overflow-hidden"
               >
                 <CardContent className="p-0">
-                  <div className="aspect-square bg-gray-800 relative group p-[5%]">
+                  <div className="aspect-square bg-gray-none relative group p-[5%]">
                     <img
                       src={album.coverImage || `/img/album/${album._id}.jpg`}
                       alt={album.title}
@@ -111,7 +111,7 @@ export default function AlbumsPage() {
                   </div>
                   <div className="p-4">
                     <h3 className="font-medium text-white text-lg truncate">{album.title}</h3>
-                    <p className="text-gray-400 text-sm">{album.songs ? `${album.songs.length} songs` : "No songs"}</p>
+                    <p className="text-gray-400 text-sm">{album.songs ? `${album.songs.length} bài hát` : "Chưa có bài hát"}</p>
                   </div>
                 </CardContent>
               </Card>

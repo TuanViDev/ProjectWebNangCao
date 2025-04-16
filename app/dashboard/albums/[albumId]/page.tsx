@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { Play, Music, ThumbsUp, User } from "lucide-react"
@@ -17,7 +16,7 @@ interface Album {
     name: string
     _id: string
   }
-  songs?: any[]
+  songs?: any[] // Danh sách các songId hoặc object bài hát
   createdAt?: string
   releaseDate?: string
 }
@@ -75,28 +74,41 @@ export default function AlbumDetailPage() {
         }
 
         const albumData = await albumResponse.json()
-        setAlbum(albumData.album) // API returns { album }
+        setAlbum(albumData.album)
 
-        // Fetch album's songs using search API with album title
-        const songsResponse = await fetch(`/api/v1/song/search?query=${encodeURIComponent(albumData.album.title)}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        // Fetch song details for each song in album.songs
+        if (albumData.album.songs && albumData.album.songs.length > 0) {
+          const songPromises = albumData.album.songs.map(async (song: any) => {
+            const songId = typeof song === 'string' ? song : song._id
+            try {
+              const songResponse = await fetch(`/api/v1/song/find?songId=${songId}`, {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              })
 
-        if (!songsResponse.ok) {
-          if (songsResponse.status === 404) {
-            // No songs found is not an error, just set empty array
-            setSongs([])
-          } else {
-            throw new Error("Failed to fetch album songs")
-          }
+              if (!songResponse.ok) {
+                console.error(`Error fetching song ${songId}:`, await songResponse.text())
+                return null
+              }
+
+              const songData = await songResponse.json()
+              return songData.song
+            } catch (songError) {
+              console.error(`Error fetching song ${songId}:`, songError)
+              return null
+            }
+          })
+
+          const songResults = await Promise.all(songPromises)
+          // Lọc bỏ các kết quả null và sắp xếp theo trackNumber (nếu có)
+          const validSongs = songResults
+            .filter((song): song is Song => song !== null)
+            .sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0))
+          setSongs(validSongs)
         } else {
-          const songsData = await songsResponse.json()
-          // Filter songs to only include those that match this album
-          const albumSongs = songsData.songs.filter((song: Song) => song.album && song.album._id === albumId)
-          setSongs(albumSongs || [])
+          setSongs([])
         }
       } catch (error: any) {
         console.error("Error fetching album details:", error)
@@ -123,6 +135,7 @@ export default function AlbumDetailPage() {
   }
 
   const playSong = (song: Song) => {
+    console.log("Playing song:", song) // Debug để kiểm tra dữ liệu song
     const event = new CustomEvent("playSong", { detail: song })
     window.dispatchEvent(event)
   }
@@ -233,10 +246,8 @@ export default function AlbumDetailPage() {
               )}
               <span className="mx-2">•</span>
               <span>
-                {songs.length} {songs.length === 1 ? "track" : "tracks"}
+                {songs.length} {songs.length === 1 ? "bài hát" : "bài hát"}
               </span>
-              <span className="mx-2">•</span>
-              <span>{getTotalDuration()}</span>
               {album.releaseDate && (
                 <>
                   <span className="mx-2">•</span>
@@ -244,14 +255,7 @@ export default function AlbumDetailPage() {
                 </>
               )}
             </div>
-
-            <div className="flex gap-3 mb-6">
-              {songs.length > 0 && (
-                <Button onClick={playAllSongs} className="bg-green-500 hover:bg-green-600 text-white">
-                  <Play className="mr-2 h-4 w-4" /> Play
-                </Button>
-              )}
-            </div>
+            
           </div>
         </div>
 
@@ -259,7 +263,7 @@ export default function AlbumDetailPage() {
 
         {/* Songs Section */}
         <div>
-          <h2 className="text-2xl font-bold mb-6">Tracks</h2>
+          <h2 className="text-2xl font-bold mb-6">Bài hát</h2>
 
           {songs.length === 0 ? (
             <div className="text-center py-10 bg-gray-800 rounded-lg">
@@ -272,7 +276,7 @@ export default function AlbumDetailPage() {
               {songs.map((song, index) => (
                 <div
                   key={song._id}
-                  className="flex items-center p-3 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="flex items-center p-3 rounded-md bg-gray-800 hover:bg-gray-700 transition-colors cursor-pointer"
                   onClick={() => playSong(song)}
                 >
                   <div className="w-10 text-center text-gray-400 mr-4">{song.trackNumber || index + 1}</div>
@@ -286,7 +290,7 @@ export default function AlbumDetailPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium truncate">{song.title}</h3>
-                    {song.artist && song.artist._id !== album.artist?._id && (
+                    {song.artist && (
                       <div className="flex items-center text-sm text-gray-400">
                         <User className="h-3 w-3 mr-1" />
                         <span className="truncate">{song.artist.name}</span>
@@ -302,18 +306,7 @@ export default function AlbumDetailPage() {
                       <ThumbsUp className="h-4 w-4 mr-2" />
                       <span>{song.like || 0}</span>
                     </div>
-                    <div className="w-16 text-right">
-                      {song.duration ? (
-                        <span>
-                          {Math.floor(song.duration / 60)}:
-                          {Math.floor(song.duration % 60)
-                            .toString()
-                            .padStart(2, "0")}
-                        </span>
-                      ) : (
-                        <span>--:--</span>
-                      )}
-                    </div>
+                    
                   </div>
                 </div>
               ))}

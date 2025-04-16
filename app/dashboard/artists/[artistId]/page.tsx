@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { Play, Music, ThumbsUp, Calendar, Disc } from "lucide-react"
+import { Play, Music, ThumbsUp, Calendar, Disc } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
@@ -72,24 +72,29 @@ export default function ArtistDetailPage() {
         const artistData = await artistResponse.json()
         setArtist(artistData.artist) // API returns { artist }
 
-        // Fetch artist's songs
-        const songsResponse = await fetch(`/api/v1/song/search?query=${encodeURIComponent(artistData.artist.name)}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        // Fetch artist's songs using the new by-artist API endpoint
+        try {
+          const songsResponse = await fetch(`/api/v1/song/by-artist?artistId=${artistId}`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
 
-        if (!songsResponse.ok) {
-          if (songsResponse.status === 404) {
-            // No songs found is not an error, just set empty array
+          if (songsResponse.ok) {
+            const songsData = await songsResponse.json()
+            setSongs(songsData.data || [])
+          } else if (songsResponse.status !== 404) {
+            console.error("Error fetching songs:", await songsResponse.text())
+            // Set empty array for songs but don't show error
             setSongs([])
           } else {
-            throw new Error("Failed to fetch artist songs")
+            setSongs([])
           }
-        } else {
-          const songsData = await songsResponse.json()
-          setSongs(songsData.songs || []) // API returns { songs }
+        } catch (songsError) {
+          console.error("Error fetching artist songs:", songsError)
+          setSongs([])
+          // Don't set an error state here, just log it - we already have the artist
         }
       } catch (error: any) {
         console.error("Error fetching artist details:", error)
@@ -202,23 +207,17 @@ export default function ArtistDetailPage() {
           <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold mb-2">{artist.name}</h1>
             <p className="text-gray-400 mb-6">
-              {songs.length} {songs.length === 1 ? "song" : "songs"} • Added {formatDate(artist.createdAt)}
+              {songs.length} bài hát
             </p>
 
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Biography</h2>
+              <h2 className="text-xl font-semibold mb-2">Giới thiệu</h2>
               <p className="text-gray-300 whitespace-pre-line">
                 {artist.bio || "No biography available for this artist."}
               </p>
             </div>
 
-            <div className="flex gap-3">
-              {songs.length > 0 && (
-                <Button onClick={() => playSong(songs[0])} className="bg-green-500 hover:bg-green-600 text-white">
-                  <Play className="mr-2 h-4 w-4" /> Play
-                </Button>
-              )}
-            </div>
+
           </div>
         </div>
 
@@ -226,20 +225,20 @@ export default function ArtistDetailPage() {
 
         {/* Songs Section */}
         <div>
-          <h2 className="text-2xl font-bold mb-6">Songs</h2>
+          <h2 className="text-2xl font-bold mb-6">Bài hát</h2>
 
           {songs.length === 0 ? (
             <div className="text-center py-10 bg-gray-800 rounded-lg">
               <Music className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-semibold text-white">No songs available</h3>
-              <p className="mt-1 text-sm text-gray-500">This artist doesn't have any songs yet.</p>
+              <h3 className="mt-2 text-sm font-semibold text-white">Chưa có bài hát khả dụng.</h3>
+              <p className="mt-1 text-sm text-gray-500">Nghệ sĩ này hiện chưa có bài hát.</p>
             </div>
           ) : (
             <div className="space-y-2">
               {songs.map((song, index) => (
                 <div
                   key={song._id}
-                  className="flex items-center p-3 rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="flex items-center p-3 rounded-md bg-gray-800 hover:bg-gray-700 transition-colors cursor-pointer"
                   onClick={() => playSong(song)}
                 >
                   <div className="w-10 text-center text-gray-400 mr-4">{index + 1}</div>
@@ -272,18 +271,6 @@ export default function ArtistDetailPage() {
                     <div className="flex items-center w-20">
                       <ThumbsUp className="h-4 w-4 mr-2" />
                       <span>{song.like || 0}</span>
-                    </div>
-                    <div className="w-16 text-right">
-                      {song.duration ? (
-                        <span>
-                          {Math.floor(song.duration / 60)}:
-                          {Math.floor(song.duration % 60)
-                            .toString()
-                            .padStart(2, "0")}
-                        </span>
-                      ) : (
-                        <span>--:--</span>
-                      )}
                     </div>
                   </div>
                 </div>

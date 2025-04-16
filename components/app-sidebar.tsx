@@ -79,7 +79,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="text-white border-none">
-      <SidebarContent className="bg-gray-800 pl-5 pr-5 pt-20">
+      <SidebarContent className="bg-gray-800 pl-5 pr-5 pt-6">
+        {/* Logo Section */}
+        <div className="flex justify-center mb-5">
+          <img src="/logo.png" alt="Logo" className=" h-[80%] w-auto" />
+        </div>
+
         <SidebarGroup className="text-white">
           <SidebarGroupContent className="text-white">
             <SidebarMenu>
@@ -139,13 +144,15 @@ export function AppSidebar() {
               Logout
             </button>
           </div>
-          <div className="flex items-center space-x-3 p-2 rounded-lg">
+          <div className="flex items-center space-x-3 p-2 rounded-lg w-full">
             <Avatar className="w-10 h-10">
               <AvatarImage src="https://github.com/shadcn.png" alt="User Avatar" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-            <div className="text-white text-ss">
-              <span>{user?.email || "Anonymous User"}</span>
+            <div className="text-white text-xs">
+              <span className="block max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">
+                {user?.email || "Anonymous User"}
+              </span>
             </div>
           </div>
         </div>

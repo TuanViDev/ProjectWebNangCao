@@ -198,7 +198,7 @@ export default function Explore() {
                           onError={handleImageError}
                           alt={song.title}
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-lg">
+                        <div className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-lg">
                           <div className="w-16 h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"

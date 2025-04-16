@@ -1,11 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { User } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 interface Artist {
@@ -60,7 +58,7 @@ export default function ArtistsPage() {
   if (loading) {
     return (
       <div className="bg-gray-900 min-h-full text-white p-10">
-        <h1 className="text-4xl font-bold mb-8">Artists</h1>
+        <h1 className="text-4xl font-bold mb-8">Nghệ sĩ</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, index) => (
             <Card key={index} className="bg-gray-800 border-gray-700 animate-pulse">
@@ -78,7 +76,7 @@ export default function ArtistsPage() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-10">
-      <h1 className="text-4xl font-bold mb-8">Artists</h1>
+      <h1 className="text-4xl font-bold mb-8">Nghệ sĩ</h1>
 
       {artists.length === 0 ? (
         <div className="text-center py-10">
@@ -89,26 +87,21 @@ export default function ArtistsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {artists.map((artist) => (
-                            <Link href={`/dashboard/artists/${artist._id}`} passHref>
-                
-            <Card key={artist._id} className="border-none bg-transparent transition-colors">
-              <CardContent className="p-6 flex flex-col items-center">
-                <div className="w-[80%] h-[80%]] bg-gray-700 rounded-full mb-4 overflow-hidden">
-                  <img
-                    src={artist.profileImage || `/img/artist/${artist._id}.jpg`}
-                    alt={artist.name}
-                    className="w-full h-full object-cover"
-                    onError={handleImageError}
-                  />
-                </div>
-                <h3 className="font-medium text-white text-lg mb-1">{artist.name}</h3>
-                {artist.songs && <p className="text-gray-400 text-sm mb-4">{artist.songs.length} songs</p>}
-                {/* Fixed the bio overflow issue with line-clamp-2 and max-w-full */}
-                <p className="text-gray-400 text-sm text-center line-clamp-2 mb-4 max-w-full">
-                  {artist.bio || "No biography available"}
-                </p>
-              </CardContent>
-            </Card>
+            <Link key={artist._id} href={`/dashboard/artists/${artist._id}`} passHref>
+              <Card className="border-none bg-transparent transition-colors bg-gray-800 hover:bg-gray-700">
+                <CardContent className="p-6 flex flex-col items-center">
+                  <div className="w-[80%] h-auto rounded-full overflow-hidden mb-4">
+                    <img
+                      src={artist.profileImage || `/img/artist/${artist._id}.jpg`}
+                      alt={artist.name}
+                      className="w-full h-full object-cover object-center"
+                      onError={handleImageError}
+                    />
+                  </div>
+                  <h3 className="font-medium text-white text-lg mb-1">{artist.name}</h3>
+                  {artist.songs && <p className="text-gray-400 text-sm mb-4">{artist.songs.length} bài hát</p>}
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>

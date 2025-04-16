@@ -72,7 +72,7 @@ export default function TrendingPage() {
   if (loading) {
     return (
       <div className="bg-gray-900 min-h-full text-white p-10">
-        <h1 className="text-4xl font-bold mb-8">Trending Songs</h1>
+        <h1 className="text-4xl font-bold mb-8">Bài hát xu hướng</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, index) => (
             <Card key={index} className="bg-gray-800 border-gray-700 animate-pulse">
@@ -94,7 +94,7 @@ export default function TrendingPage() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-10">
-      <h1 className="text-4xl font-bold mb-8">Trending Songs</h1>
+      <h1 className="text-4xl font-bold mb-8">Bài hát xu hướng</h1>
 
       {trendingSongs.length === 0 ? (
         <div className="text-center py-10">

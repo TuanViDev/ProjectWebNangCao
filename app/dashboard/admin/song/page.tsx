@@ -1,4 +1,3 @@
-// SongManager component
 "use client";
 
 import { Card } from "@/components/ui/card";
@@ -108,6 +107,12 @@ export default function SongManager() {
 
   const [artists, setArtists] = useState<any[]>([]);
   const [albums, setAlbums] = useState<any[]>([]);
+
+  // Hàm rút gọn tên file MP3
+  const truncateFileName = (name: string): string => {
+    if (!name || name.length <= 25) return name;
+    return `${name.slice(0, 10)}...${name.slice(-10)}`;
+  };
 
   const fetchArtists = async () => {
     const token = sessionStorage.getItem("token");
@@ -480,7 +485,7 @@ export default function SongManager() {
                         onChange={(e) => handleMp3Change(e)}
                       />
                       <Button className="w-full bg-gray-700 border-gray-500 hover:bg-gray-600">
-                        {newSongInfo.mp3 ? newSongInfo.mp3.name : "Chọn File MP3"}
+                        {newSongInfo.mp3 ? truncateFileName(newSongInfo.mp3.name) : "Chọn File MP3"}
                       </Button>
                     </div>
                   </div>
@@ -699,7 +704,7 @@ export default function SongManager() {
                                           onChange={(e) => handleMp3Change(e, true)}
                                         />
                                         <Button className="w-full bg-gray-700 border-gray-500 hover:bg-gray-600">
-                                          {songInfo.mp3 ? songInfo.mp3.name : "Chọn File MP3 (tùy chọn)"}
+                                          {songInfo.mp3 ? truncateFileName(songInfo.mp3.name) : "Chọn File MP3 (tùy chọn)"}
                                         </Button>
                                       </div>
                                     </div>
