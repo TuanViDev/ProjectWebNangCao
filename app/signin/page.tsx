@@ -41,7 +41,7 @@ const SignIn = () => {
       sessionStorage.setItem("role", JSON.stringify(data.role)); // Save role to sessionStorage
 
       toast.success(data.message);
-      router.push("/dashboard");
+      router.push("/dashboard/explore");
     } else {
       toast.error(data.message);
     }
