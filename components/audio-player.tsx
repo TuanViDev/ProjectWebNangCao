@@ -352,13 +352,6 @@ export const AudioPlayer = () => {
       {/* Điều khiển */}
       <div className="flex flex-col items-center justify-center flex-1">
         <div className="flex items-center space-x-4 mb-2">
-          {/* <button
-            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"
-            onClick={toggleShuffle}
-            aria-label={isShuffle ? "Tắt xáo trộn" : "Bật xáo trộn"}
-          >
-            <Shuffle size={18} className={isShuffle ? "text-green-500" : ""} />
-          </button> */}
           <button
             className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"
             onClick={() => howlRef.current?.seek(0)}

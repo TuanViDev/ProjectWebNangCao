@@ -91,7 +91,7 @@ export default function ArtistsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {artists.map((artist) => (
             <Link key={artist._id} href={`/dashboard/artists/${artist._id}`} passHref>
-              <Card className="border-none bg-transparent transition-colors bg-gray-800 hover:bg-gray-700">
+              <Card className="border-none transition-colors bg-gray-800 hover:bg-gray-700">
                 <CardContent className="p-6 flex flex-col items-center">
                   <div className="w-[80%] h-auto rounded-full overflow-hidden mb-4">
                     <img

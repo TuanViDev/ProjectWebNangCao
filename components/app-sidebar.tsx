@@ -1,4 +1,4 @@
-import { Compass, Flame, Music, Album, User, Disc, Headphones, Award } from "lucide-react";
+import { Compass, Flame, Music, Album, User, Disc, Headphones, Award, UserCog } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,7 @@ const adminItems = [
   { title: "Quản lý nghệ sĩ", url: "/dashboard/admin/artist", icon: User },
   { title: "Quản lý album", url: "/dashboard/admin/album", icon: Disc },
   { title: "Quản lý bài hát", url: "/dashboard/admin/song", icon: Headphones },
+  { title: "Quản lý người dùng", url: "/dashboard/admin/user", icon: UserCog },
 ];
 
 export function AppSidebar() {

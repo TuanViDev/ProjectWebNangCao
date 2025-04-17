@@ -37,11 +37,14 @@ import jwt from "jsonwebtoken";
 
 export async function GET(request) {
   try {
+    // Connect to the database
     await dbConnect();
-    const url = new URL(request.url, `http://localhost`);
+
+    // Parse the URL to get the query parameters
+    const url = new URL(request.url);
     const id = url.searchParams.get("id");
 
-    // Lấy token từ header
+    // Extract token from the Authorization header
     const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(
@@ -73,7 +76,7 @@ export async function GET(request) {
       );
     }
 
-    // Tìm user hiện tại dựa trên email từ token
+    // Find the current user based on the email from the decoded token
     const currentUser = await User.findOne({ email: decoded.email });
     if (!currentUser) {
       return new Response(
@@ -88,7 +91,7 @@ export async function GET(request) {
       );
     }
 
-    // Nếu không có ID, trả về thông tin của user hiện tại
+    // If no ID is provided, return the current user's profile
     if (!id) {
       return new Response(
         JSON.stringify({
@@ -102,7 +105,7 @@ export async function GET(request) {
       );
     }
 
-    // Nếu có ID, kiểm tra quyền admin
+    // If an ID is provided, check for admin privileges
     if (currentUser.role !== 1) {
       return new Response(
         JSON.stringify({
@@ -116,7 +119,7 @@ export async function GET(request) {
       );
     }
 
-    // Kiểm tra ID hợp lệ
+    // Validate the provided ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return new Response(
         JSON.stringify({
@@ -130,7 +133,7 @@ export async function GET(request) {
       );
     }
 
-    // Tìm user theo ID
+    // Find the user by the provided ID
     const user = await User.findById(id);
     if (!user) {
       return new Response(
@@ -145,6 +148,7 @@ export async function GET(request) {
       );
     }
 
+    // Return the found user
     return new Response(
       JSON.stringify({
         success: true,
@@ -156,6 +160,7 @@ export async function GET(request) {
       }
     );
   } catch (error) {
+    // Catch any errors and return a 500 error response
     return new Response(
       JSON.stringify({
         success: false,
