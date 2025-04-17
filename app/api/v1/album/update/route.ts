@@ -113,9 +113,9 @@ export async function PUT(req: NextRequest) {
 
         await album.save();
 
-        return NextResponse.json({ message: "Album updated successfully", album }, { status: 200 });
+        return NextResponse.json({ message: "Cập nhật album thành công", album }, { status: 200 });
     } catch (error: any) {
-        console.error("Update Album Error:", error);
-        return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });
+        console.error("Cập nhật album thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ", error: error.message }, { status: 500 });
     }
 }

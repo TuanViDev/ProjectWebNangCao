@@ -56,14 +56,14 @@ export async function GET(req: NextRequest) {
         await connectDB();
 
         const albumId = req.nextUrl.searchParams.get("albumId");
-        if (!albumId) return NextResponse.json({ message: "Album ID is required" }, { status: 400 });
+        if (!albumId) return NextResponse.json({ message: "Thiếu Album ID" }, { status: 400 });
 
         const album = await Album.findById(albumId).populate("songs");
-        if (!album) return NextResponse.json({ message: "Album not found" }, { status: 404 });
+        if (!album) return NextResponse.json({ message: "Album không tồn tại" }, { status: 404 });
 
         return NextResponse.json({ album }, { status: 200 });
     } catch (error) {
-        console.error("Find Album Error:", error);
+        console.error("Tìm album thất bại:", error);
         return NextResponse.json({ message: "Server error" }, { status: 500 });
     }
 }

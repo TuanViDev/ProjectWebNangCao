@@ -75,7 +75,7 @@ const SignIn = () => {
             <Input
               type="password"
               disabled={loading}
-              placeholder="Password"
+              placeholder="Mật khẩu"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               className="bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-gray-500 focus:scale-103 transition-all"
@@ -89,7 +89,7 @@ const SignIn = () => {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                   </svg>
                 ) : null}
-                {loading ? "Đang đăng nhập..." : "Sign in"}
+                {loading ? "Đang đăng nhập..." : "Đăng nhập"}
               </Button>
             </div>
           </form>
@@ -98,21 +98,7 @@ const SignIn = () => {
           </div>
         </CardContent>
 
-        <div className="flex items-center w-full my-4">
-          <div className="flex-grow border-t border-gray-700"></div>
-          <span className="px-3 text-gray-400">Hoặc</span>
-          <div className="flex-grow border-t border-gray-700"></div>
-        </div>
 
-        <CardFooter className="flex flex-col w-full space-y-2">
-          <Button
-            size="lg"
-            className="bg-gray-700 hover:bg-gray-600 w-full text-white px-6 py-2"
-            onClick={() => alert("Sign in with Github")}
-          >
-            <FaGithub className="mr-2" /> Sign in with Github
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );

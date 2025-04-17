@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
 
         const query = decodeURIComponent(req.nextUrl.searchParams.get("query") || "");
         if (!query) {
-            return NextResponse.json({ message: "Query parameter is required" }, { status: 400 });
+            return NextResponse.json({ message: "Thiếu từ khóa tìm kiếm" }, { status: 400 });
         }
 
         const artists = await Artist.find({
@@ -74,12 +74,12 @@ export async function GET(req: NextRequest) {
             .populate("songs");
 
         if (artists.length === 0) {
-            return NextResponse.json({ message: "No artists found" }, { status: 404 });
+            return NextResponse.json({ message: "Không tìm thấy nghệ sĩ" }, { status: 404 });
         }
 
         return NextResponse.json({ artists }, { status: 200 });
     } catch (error) {
-        console.error("Search Artists Error:", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+        console.error("Tìm kiếm nghệ sĩ thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ" }, { status: 500 });
     }
 }

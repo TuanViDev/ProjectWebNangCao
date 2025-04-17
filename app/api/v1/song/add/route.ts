@@ -136,16 +136,16 @@ export async function POST(req: NextRequest) {
         const mp3File = formData.get("mp3") as File;
 
         if (!title || !artist || !mp3File) {
-            return NextResponse.json({ message: "Missing required fields: title, artist, and mp3 file" }, { status: 400 });
+            return NextResponse.json({ message: "Thiếu thông tin bài hát" }, { status: 400 });
         }
 
         const artistDoc = await Artist.findById(artist);
-        if (!artistDoc) return NextResponse.json({ message: "Artist not found" }, { status: 404 });
+        if (!artistDoc) return NextResponse.json({ message: "Nghệ sĩ không tồn tại" }, { status: 404 });
 
         let albumDoc = null;
         if (album) {
             albumDoc = await Album.findById(album);
-            if (!albumDoc) return NextResponse.json({ message: "Album not found" }, { status: 404 });
+            if (!albumDoc) return NextResponse.json({ message: "Album không tồn tại" }, { status: 404 });
         }
 
         const newSong = new Song({ title, artist, album, isVip, play: 0, like: 0 });
@@ -183,9 +183,9 @@ export async function POST(req: NextRequest) {
             await albumDoc.save();
         }
 
-        return NextResponse.json({ message: "Song added successfully", song: newSong }, { status: 201 });
+        return NextResponse.json({ message: "Thêm bài hát thành công", song: newSong }, { status: 201 });
     } catch (error: any) {
-        console.error("Add Song Error:", error);
-        return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });
+        console.error("Thêm bài hát thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ", error: error.message }, { status: 500 });
     }
 }

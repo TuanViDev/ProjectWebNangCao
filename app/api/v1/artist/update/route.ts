@@ -92,12 +92,12 @@ export async function PUT(req: NextRequest) {
 
         const { artistId, name, bio, profileImage } = await req.json();
         if (!artistId) {
-            return NextResponse.json({ message: "Missing required field: artistId" }, { status: 400 });
+            return NextResponse.json({ message: "Thiếu ID Nghệ sĩ" }, { status: 400 });
         }
 
         const artist = await Artist.findById(artistId);
         if (!artist) {
-            return NextResponse.json({ message: "Artist not found" }, { status: 404 });
+            return NextResponse.json({ message: "Nghệ sĩ không tồn tại" }, { status: 404 });
         }
 
         if (name) artist.name = name;
@@ -119,9 +119,9 @@ export async function PUT(req: NextRequest) {
 
         await artist.save();
 
-        return NextResponse.json({ message: "Artist updated successfully", artist }, { status: 200 });
+        return NextResponse.json({ message: "Cập nhật thông tin nghệ sĩ thành công", artist }, { status: 200 });
     } catch (error: any) {
-        console.error("Update Artist Error:", error);
-        return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });
+        console.error("Cập nhật thông tin nghệ sĩ thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ", error: error.message }, { status: 500 });
     }
 }

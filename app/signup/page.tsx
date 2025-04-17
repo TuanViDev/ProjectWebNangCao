@@ -73,7 +73,7 @@ const SignUp = () => {
             <Input
               type="password"
               disabled={pending}
-              placeholder="Password"
+              placeholder="Mật khẩu"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               className="bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-gray-500 focus:scale-103 transition-all"
@@ -82,7 +82,7 @@ const SignUp = () => {
             <Input
               type="password"
               disabled={pending}
-              placeholder="Confirm password"
+              placeholder="Nhập lại mật khẩu"
               value={form.confirmPassword}
               onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
               className="bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-gray-500 focus:scale-103 transition-all"
@@ -96,7 +96,7 @@ const SignUp = () => {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                   </svg>
                 )}
-                {pending ? "Đang đăng ký..." : "Sign up"}
+                {pending ? "Đang đăng ký..." : "Đăng ký"}
               </Button>
             </div>
           </form>
@@ -105,21 +105,7 @@ const SignUp = () => {
           </div>
         </CardContent>
 
-        <div className="flex items-center w-full my-4">
-          <div className="flex-grow border-t border-gray-700"></div>
-          <span className="px-3 text-gray-400">Hoặc</span>
-          <div className="flex-grow border-t border-gray-700"></div>
-        </div>
 
-        <CardFooter className="flex flex-col w-full space-y-2">
-          <Button
-            size="lg"
-            className="bg-gray-700 hover:bg-gray-600 w-full text-white px-6 py-2"
-            onClick={() => alert("Sign up with Github")}
-          >
-            <FaGithub className="mr-2" /> Sign up with Github
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );

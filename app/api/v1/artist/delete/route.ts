@@ -47,10 +47,10 @@ export async function DELETE(req: NextRequest) {
         }
 
         const artistId = req.nextUrl.searchParams.get("artistId");
-        if (!artistId) return NextResponse.json({ message: "Artist ID is required" }, { status: 400 });
+        if (!artistId) return NextResponse.json({ message: "Thiếu ID nghệ sĩ" }, { status: 400 });
 
         const artist = await Artist.findById(artistId);
-        if (!artist) return NextResponse.json({ message: "Artist not found" }, { status: 404 });
+        if (!artist) return NextResponse.json({ message: "Nghệ sĩ không tồn tại" }, { status: 404 });
 
         // Xóa tất cả bài hát liên quan
         await Song.deleteMany({ artist: artistId });
@@ -58,9 +58,9 @@ export async function DELETE(req: NextRequest) {
         // Xóa artist
         await Artist.findByIdAndDelete(artistId);
 
-        return NextResponse.json({ message: "Artist and related songs deleted successfully" }, { status: 200 });
+        return NextResponse.json({ message: "Đã xóa thành công nghệ sĩ và bài hát liên quan" }, { status: 200 });
     } catch (error) {
-        console.error("Delete Artist Error:", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+        console.error("Xóa nghệ sĩ thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ" }, { status: 500 });
     }
 }

@@ -48,10 +48,10 @@ export async function DELETE(req: NextRequest) {
         }
 
         const songId = req.nextUrl.searchParams.get("songId");
-        if (!songId) return NextResponse.json({ message: "Song ID is required" }, { status: 400 });
+        if (!songId) return NextResponse.json({ message: "Thiếu ID bài hát" }, { status: 400 });
 
         const song = await Song.findById(songId);
-        if (!song) return NextResponse.json({ message: "Song not found" }, { status: 404 });
+        if (!song) return NextResponse.json({ message: "Bài hát không tồn tại" }, { status: 404 });
 
         // Xóa song khỏi mảng songs trong Artist
         await Artist.updateOne({ _id: song.artist }, { $pull: { songs: songId } });
@@ -64,9 +64,9 @@ export async function DELETE(req: NextRequest) {
         // Xóa song
         await Song.findByIdAndDelete(songId);
 
-        return NextResponse.json({ message: "Song deleted successfully" }, { status: 200 });
+        return NextResponse.json({ message: "Xóa bài hát thành công" }, { status: 200 });
     } catch (error) {
-        console.error("Delete Song Error:", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+        console.error("Xóa bài hát thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ" }, { status: 500 });
     }
 }

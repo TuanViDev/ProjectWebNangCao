@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
         const { title, coverImage = null } = await req.json();
         if (!title) {
-            return NextResponse.json({ message: "Missing required field: title" }, { status: 400 });
+            return NextResponse.json({ message: "Thiếu tiêu đề" }, { status: 400 });
         }
 
         const newAlbum = new Album({ title, coverImage: "", songs: [] });
@@ -103,9 +103,9 @@ export async function POST(req: NextRequest) {
             await newAlbum.save();
         }
 
-        return NextResponse.json({ message: "Album added successfully", album: newAlbum }, { status: 201 });
+        return NextResponse.json({ message: "Thêm album thành công", album: newAlbum }, { status: 201 });
     } catch (error: any) {
-        console.error("Add Album Error:", error);
-        return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });
+        console.error("Thêm album thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ", error: error.message }, { status: 500 });
     }
 }

@@ -47,10 +47,10 @@ export async function DELETE(req: NextRequest) {
         }
 
         const albumId = req.nextUrl.searchParams.get("albumId");
-        if (!albumId) return NextResponse.json({ message: "Album ID is required" }, { status: 400 });
+        if (!albumId) return NextResponse.json({ message: "Thiếu Album ID" }, { status: 400 });
 
         const album = await Album.findById(albumId);
-        if (!album) return NextResponse.json({ message: "Album not found" }, { status: 404 });
+        if (!album) return NextResponse.json({ message: "Album không tồn tại" }, { status: 404 });
 
         // Cập nhật các bài hát liên quan (xóa tham chiếu album)
         await Song.updateMany({ album: albumId }, { $unset: { album: "" } });
@@ -58,9 +58,9 @@ export async function DELETE(req: NextRequest) {
         // Xóa album
         await Album.findByIdAndDelete(albumId);
 
-        return NextResponse.json({ message: "Album deleted successfully" }, { status: 200 });
+        return NextResponse.json({ message: "Xóa album thành công" }, { status: 200 });
     } catch (error) {
-        console.error("Delete Album Error:", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+        console.error("Xóa album thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ" }, { status: 500 });
     }
 }

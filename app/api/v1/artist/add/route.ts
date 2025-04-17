@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
 
         const { name, bio = "", profileImage = null } = await req.json();
         if (!name) {
-            return NextResponse.json({ message: "Missing required field: name" }, { status: 400 });
+            return NextResponse.json({ message: "Thiếu thông tin: Tên" }, { status: 400 });
         }
 
         const newArtist = new Artist({ name, bio, profileImage: "", songs: [] });
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
             await newArtist.save();
         }
 
-        return NextResponse.json({ message: "Artist added successfully", artist: newArtist }, { status: 201 });
+        return NextResponse.json({ message: "Thêm nghệ sĩ thành công", artist: newArtist }, { status: 201 });
     } catch (error: any) {
         console.error("Add Artist Error:", error);
         return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });

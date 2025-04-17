@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
 
         const query = decodeURIComponent(req.nextUrl.searchParams.get("query") || "");
         if (!query) {
-            return NextResponse.json({ message: "Query parameter is required" }, { status: 400 });
+            return NextResponse.json({ message: "Thiếu từ khóa tìm kiếm" }, { status: 400 });
         }
 
         const albums = await Album.find({
@@ -69,12 +69,12 @@ export async function GET(req: NextRequest) {
             .populate("songs");
 
         if (albums.length === 0) {
-            return NextResponse.json({ message: "No albums found" }, { status: 404 });
+            return NextResponse.json({ message: "Không tìm thấy album" }, { status: 404 });
         }
 
         return NextResponse.json({ albums }, { status: 200 });
     } catch (error) {
-        console.error("Search Albums Error:", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+        console.error("Tìm kiếm album thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ" }, { status: 500 });
     }
 }

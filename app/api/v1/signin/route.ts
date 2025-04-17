@@ -12,8 +12,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
  *   post:
  *     tags:
  *       - Authentication
- *     summary: User Sign In
- *     description: Authenticate a user and return a JWT token.
+ *     summary: Đăng nhập tài khoản
+ *     description: Xác thực tài khoản, return về JWT.
  *     requestBody:
  *       required: true
  *       content:
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
         // Kiểm tra dữ liệu đầu vào
         if (!email || !password) {
-            return NextResponse.json({ message: "Please fill in all fields" }, { status: 400 });
+            return NextResponse.json({ message: "Vui lòng điền đầy đủ thông tin" }, { status: 400 });
         }
 
         await connectDB();
@@ -62,13 +62,13 @@ export async function POST(request: Request) {
         // Kiểm tra xem email có tồn tại không
         const user = await User.findOne({ email });
         if (!user) {
-            return NextResponse.json({ message: "Invalid email or password" }, { status: 400 });
+            return NextResponse.json({ message: "Email hoặc mật khẩu không hợp lệ" }, { status: 400 });
         }
 
         // Kiểm tra mật khẩu
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return NextResponse.json({ message: "Invalid email or password" }, { status: 400 });
+            return NextResponse.json({ message: "Email hoặc mật khẩu không hợp lệ" }, { status: 400 });
         }
 
         // Tạo token JWT
@@ -78,10 +78,10 @@ export async function POST(request: Request) {
             { expiresIn: "7d" }
         );
 
-        return NextResponse.json({ message: "Login successful", token, role: user.role }, { status: 200 });
+        return NextResponse.json({ message: "Đăng nhập thành công", token, role: user.role }, { status: 200 });
 
     } catch (error) {
         console.error("Signin Error:", error);
-        return NextResponse.json({ message: "Server error, please try again" }, { status: 500 });
+        return NextResponse.json({ message: "Lỗi máy chủ, vui lòng thử lại sau" }, { status: 500 });
     }
 }

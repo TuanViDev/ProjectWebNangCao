@@ -61,16 +61,16 @@ export async function GET(req: NextRequest) {
         await connectDB();
 
         const songId = req.nextUrl.searchParams.get("songId");
-        if (!songId) return NextResponse.json({ message: "Song ID is required" }, { status: 400 });
+        if (!songId) return NextResponse.json({ message: "Thiếu ID bài hát" }, { status: 400 });
 
         const song = await Song.findById(songId)
             .populate("artist", "name")
             .populate("album", "title");
-        if (!song) return NextResponse.json({ message: "Song not found" }, { status: 404 });
+        if (!song) return NextResponse.json({ message: "Bài hát không tồn tại" }, { status: 404 });
 
         return NextResponse.json({ song }, { status: 200 });
     } catch (error) {
-        console.error("Find Song Error:", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+        console.error("Truy vấn thất bại:", error);
+        return NextResponse.json({ message: "Lỗi máy chủ" }, { status: 500 });
     }
 }
