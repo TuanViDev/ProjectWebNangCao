@@ -86,22 +86,22 @@ export default function SongManager() {
   const [loadTimeExceeded, setLoadTimeExceeded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [newSongInfo, setNewSongInfo] = useState({ 
-    title: "", 
-    artist: "", 
-    album: "", 
-    isVip: "false", 
+  const [newSongInfo, setNewSongInfo] = useState({
+    title: "",
+    artist: "",
+    album: "",
+    isVip: "false",
     image: "",
-    mp3: null as File | null 
+    mp3: null as File | null
   });
-  const [songInfo, setSongInfo] = useState({ 
-    id: "", 
-    title: "", 
-    artist: "", 
-    album: "", 
-    isVip: "false", 
+  const [songInfo, setSongInfo] = useState({
+    id: "",
+    title: "",
+    artist: "",
+    album: "",
+    isVip: "false",
     image: "",
-    mp3: null as File | null 
+    mp3: null as File | null
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -359,6 +359,9 @@ export default function SongManager() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-[3%] overflow-hidden flex justify-center w-[100%]">
+      <head>
+        <title>Quản lý Bài hát</title>
+      </head>
       <div className="w-[100%]">
         <Card className="bg-gray-800 text-gray-200 border-none">
           <div className="flex items-center w-full gap-x-4 pr-[10%]">

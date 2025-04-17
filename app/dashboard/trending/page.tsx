@@ -94,6 +94,9 @@ export default function TrendingPage() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-10">
+      <head>
+        <title>Xu hướng</title>
+      </head>
       <h1 className="text-4xl font-bold mb-8">Bài hát xu hướng</h1>
 
       {trendingSongs.length === 0 ? (

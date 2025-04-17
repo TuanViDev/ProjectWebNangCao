@@ -96,6 +96,11 @@ export default function Explore() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-10 overflow-x-hidden">
+
+      <head>
+        <title>Khám phá</title>
+      </head>
+
       {/* Bài hát mới */}
       <div className="pl-15 pr-15 pb-10 pt-10">
         <h1 className="text-4xl font-bold pb-5">Bài hát mới</h1>

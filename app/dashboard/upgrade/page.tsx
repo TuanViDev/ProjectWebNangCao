@@ -148,9 +148,7 @@ export default function UpgradePage() {
   if (loading) {
     return (
       <div className="bg-gray-900 min-h-screen text-white p-6 md:p-10">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center md:text-left">
-          Nâng cấp gói
-        </h1>
+      
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {Array.from({ length: 2 }).map((_, index) => (
             <Card key={index} className="bg-gray-800 border-gray-700 animate-pulse">
@@ -169,6 +167,9 @@ export default function UpgradePage() {
 
   return (
     <div className="bg-gray-900 min-h-screen text-white p-6 md:p-10">
+      <head>
+          <title>Nâng cấp gói</title>
+        </head>
       <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center md:text-left pb-10">
         Nâng cấp gói
       </h1>
@@ -184,9 +185,8 @@ export default function UpgradePage() {
           {plans.map((plan) => (
             <Card
               key={plan.id}
-              className={`border-gray-700 bg-gray-800 transition-colors h-full flex flex-col justify-between ${
-                plan.isCurrent ? "border-2 border-blue-500" : ""
-              }`}
+              className={`border-gray-700 bg-gray-800 transition-colors h-full flex flex-col justify-between ${plan.isCurrent ? "border-2 border-blue-500" : ""
+                }`}
             >
               <CardContent className="p-6 flex flex-col items-center flex-grow">
                 {plan.name === "VIP" ? (
@@ -215,9 +215,8 @@ export default function UpgradePage() {
                   <Button
                     onClick={() => handleUpgrade(plan.id)}
                     disabled={plan.isCurrent}
-                    className={`w-full mt-auto ${
-                      plan.isCurrent ? "bg-gray-600 cursor-not-allowed" : "bg-blue-900 hover:bg-blue-700"
-                    }`}
+                    className={`w-full mt-auto ${plan.isCurrent ? "bg-gray-600 cursor-not-allowed" : "bg-blue-900 hover:bg-blue-700"
+                      }`}
                   >
                     {plan.isCurrent ? "Gói hiện tại" : "Nâng cấp ngay"}
                   </Button>

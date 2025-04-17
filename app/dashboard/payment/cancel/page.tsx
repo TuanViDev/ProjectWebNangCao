@@ -48,6 +48,9 @@ export default function CancelPage() {
 
   return (
     <div className="bg-gray-900 min-h-screen text-white flex items-center justify-center p-6 md:p-10">
+      <head>
+        <title>Hủy thanh toán</title>
+      </head>
       <Card className="bg-gray-800 border-gray-700 max-w-md w-full">
         <CardContent className="p-6 flex flex-col items-center text-center">
           <XCircle className="w-16 h-16 text-red-400 mb-4" />

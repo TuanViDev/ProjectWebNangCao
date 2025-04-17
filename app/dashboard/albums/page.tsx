@@ -79,6 +79,9 @@ export default function AlbumsPage() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-10">
+      <head>
+          <title>Album</title>
+        </head>
       <h1 className="text-4xl font-bold mb-8">Album mới nhất</h1>
 
       {albums.length === 0 ? (

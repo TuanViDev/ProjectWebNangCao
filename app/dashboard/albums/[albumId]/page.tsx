@@ -221,6 +221,9 @@ export default function AlbumDetailPage() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-6 md:p-10">
+<head>
+                      <title>{album.title}</title>
+                    </head>
       <div className="max-w-6xl mx-auto">
         {/* Album Header */}
         <div className="flex flex-col md:flex-row gap-8">
@@ -255,7 +258,7 @@ export default function AlbumDetailPage() {
                 </>
               )}
             </div>
-            
+
           </div>
         </div>
 
@@ -306,7 +309,7 @@ export default function AlbumDetailPage() {
                       <ThumbsUp className="h-4 w-4 mr-2" />
                       <span>{song.like || 0}</span>
                     </div>
-                    
+
                   </div>
                 </div>
               ))}

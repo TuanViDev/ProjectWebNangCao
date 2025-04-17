@@ -17,6 +17,9 @@ export default function Home() {
 
   return (
     <div className="bg-gray-900 min-h-screen text-white flex flex-col items-center justify-center p-10 overflow-x-hidden">
+      <head>
+        <title>VIBE Music</title>
+      </head>
       {/* Logo */}
       <div className="mb-10">
         <Image
@@ -32,11 +35,11 @@ export default function Home() {
       {/* Phần chào mừng */}
       <div className="text-center">
         <h1 className="text-5xl md:text-6xl font-bold mb-5">
-          Chào mừng đến với Vibe
+          Chào mừng đến với VIBE
         </h1>
         <p className="text-gray-300 text-lg md:text-xl mb-8 max-w-2xl">
-          Khám phá thế giới âm nhạc với những bài hát mới nhất và được yêu thích nhất. 
-          Hãy để Vibe mang đến cho bạn những giai điệu tuyệt vời!
+          Khám phá thế giới âm nhạc với những bài hát mới nhất và được yêu thích nhất.
+          Hãy để VIBE mang đến cho bạn những giai điệu tuyệt vời!
         </p>
 
         {/* Nút CTA */}

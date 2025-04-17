@@ -51,6 +51,9 @@ export default function SuccessPage() {
 
   return (
     <div className="bg-gray-900 min-h-screen text-white flex items-center justify-center p-6 md:p-10">
+      <head>
+        <title>Thanh toán thành công</title>
+      </head>
       <Card className="bg-gray-800 border-gray-700 max-w-md w-full">
         <CardContent className="p-6 flex flex-col items-center text-center">
           <CheckCircle className="w-16 h-16 text-green-400 mb-4" />

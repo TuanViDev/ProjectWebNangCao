@@ -141,7 +141,7 @@ export function AppSidebar() {
               className="px-4 py-1 text-gray-200 rounded-sm text-sm hover:bg-gray-500 cursor-pointer"
               onClick={handleLogout}
             >
-              Logout
+              Đăng xuất
             </button>
           </div>
           <div className="flex items-center space-x-3 p-2 rounded-lg w-full">

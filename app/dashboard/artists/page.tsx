@@ -76,6 +76,9 @@ export default function ArtistsPage() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-10">
+      <head>
+        <title>Nghệ sĩ</title>
+      </head>
       <h1 className="text-4xl font-bold mb-8">Nghệ sĩ</h1>
 
       {artists.length === 0 ? (

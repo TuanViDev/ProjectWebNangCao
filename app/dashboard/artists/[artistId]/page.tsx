@@ -192,6 +192,9 @@ export default function ArtistDetailPage() {
 
   return (
     <div className="bg-gray-900 min-h-full text-white p-6 md:p-10">
+      <head>
+        <title>{artist.name}</title>
+      </head>
       <div className="max-w-6xl mx-auto">
         {/* Artist Header */}
         <div className="flex flex-col md:flex-row gap-8">

@@ -300,6 +300,9 @@ export default function ArtistManager() {
 
     return (
         <div className="bg-gray-900 min-h-full text-white p-[3%] overflow-hidden flex justify-center w-[100%]">
+            <head>
+                <title>Quản lý Nghệ sĩ</title>
+            </head>
             <div className="w-[100%]">
                 <Card className="bg-gray-800 text-gray-200 border-none">
                     <div className="flex items-center w-full gap-x-4 pr-[10%]">

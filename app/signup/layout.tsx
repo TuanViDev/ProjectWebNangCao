@@ -10,6 +10,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <title>Đăng ký</title>
+      </head>
       <body>{children}</body>
     </html>
   )
